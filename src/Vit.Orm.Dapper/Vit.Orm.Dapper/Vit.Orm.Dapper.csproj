@@ -11,7 +11,7 @@
 
     <PropertyGroup>
         <Authors>Lith</Authors>
-        <Description>Dapper的扩展</Description>
+        <Description>Dapper extensions</Description>
         <PackageProjectUrl>https://github.com/serset/Vit.Library</PackageProjectUrl>
     </PropertyGroup>
 
