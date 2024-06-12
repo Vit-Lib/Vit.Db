@@ -27,7 +27,7 @@ namespace Vit.Extensions.Linq_Extensions.Execute
         public static DataSet Sqlite_ExecuteDataSet(this SqlConnection conn, string sql, IDictionary<string, object> param = null, int? commandTimeout = null)
         {
             //1
-            using (var reader = conn.ExecuteReader(sql, param, commandTimeout))
+            using (var reader = conn.ExecuteReader(sql, param, commandTimeout: commandTimeout))
             {
                 return reader.ReadDataSet();
             }

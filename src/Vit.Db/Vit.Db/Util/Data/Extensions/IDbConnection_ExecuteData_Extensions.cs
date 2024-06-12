@@ -23,7 +23,7 @@ namespace Vit.Extensions.Linq_Extensions
         [MethodImpl(MethodImplOptions.AggressiveInlining)]
         public static DataSet ExecuteDataSet(this IDbConnection conn, string sql, IDictionary<string, object> param = null, int? commandTimeout = null)
         {
-            using (var reader = conn.ExecuteReader(sql, param, commandTimeout))
+            using (var reader = conn.ExecuteReader(sql, param, commandTimeout: commandTimeout))
             {
                 return reader.ReadDataSet();
             }
