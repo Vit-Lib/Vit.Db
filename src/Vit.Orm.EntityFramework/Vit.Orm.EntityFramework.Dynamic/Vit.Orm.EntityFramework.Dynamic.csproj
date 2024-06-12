@@ -1,4 +1,4 @@
-<Project Sdk="Microsoft.NET.Sdk">
+﻿<Project Sdk="Microsoft.NET.Sdk">
 
     <PropertyGroup>
         <pack>nuget</pack>
@@ -30,6 +30,7 @@
 
     <ItemGroup>
         <PackageReference Include="Vit.Core" Version="2.1.21" />
+        <PackageReference Include="Vit.DynamicCompile" Version="2.2.15" />
     </ItemGroup>
 
     <ItemGroup>
