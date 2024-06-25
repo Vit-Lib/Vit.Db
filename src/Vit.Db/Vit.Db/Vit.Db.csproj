@@ -5,9 +5,9 @@
     </PropertyGroup>
 
     <PropertyGroup>
-        <TargetFramework>netstandard2.0</TargetFramework>
-        <Version>2.2.16-temp</Version>
-        <LangVersion>preview</LangVersion>
+        <TargetFramework>netstandard2.1</TargetFramework>
+        <Version>3.0.0-temp</Version>
+        <LangVersion>9.0</LangVersion>
     </PropertyGroup>
 
     <PropertyGroup>
@@ -27,11 +27,11 @@
 
     <ItemGroup>
 
-        <!--mysql-->
-        <PackageReference Include="MySql.Data" Version="8.0.28" />
-        <!--mssql-->
-        <PackageReference Include="System.Data.SqlClient" Version="4.8.3" />
-        <!--sqlite-->
+        <!--MySql-->
+        <PackageReference Include="MySqlConnector" Version="2.3.7" />
+        <!--SqlServer-->
+        <PackageReference Include="Microsoft.Data.SqlClient" Version="5.2.1" />
+        <!--Sqlite-->
         <PackageReference Include="Microsoft.Data.Sqlite" Version="8.0.6" />
 
         <PackageReference Include="Vit.Core" Version="2.1.21" />
