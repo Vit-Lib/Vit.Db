@@ -2,7 +2,7 @@
 using System.Runtime.CompilerServices;
 using Vit.Db.Util.Data;
 
-namespace Vit.Extensions.Linq_Extensions
+namespace Vit.Extensions.Db_Extensions
 {
 
     public static partial class IDbConnection_GetDbType_Extensions
@@ -25,7 +25,7 @@ namespace Vit.Extensions.Linq_Extensions
             #endregion
 
             #region (x.2)判断是否为 mysql
-            if (conn is MySql.Data.MySqlClient.MySqlConnection)
+            if (conn is MySqlConnector.MySqlConnection)
             {
                 return EDbType.mysql;
             }

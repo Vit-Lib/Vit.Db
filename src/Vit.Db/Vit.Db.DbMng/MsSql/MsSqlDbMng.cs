@@ -10,8 +10,6 @@
 */
 #endregion
 
-using Dapper;
-
 using Microsoft.SqlServer.Types;
 
 using System;
@@ -25,7 +23,7 @@ using System.Text.RegularExpressions;
 
 using Vit.Core.Module.Log;
 using Vit.Core.Util.Common;
-using Vit.Extensions.Linq_Extensions;
+using Vit.Extensions.Db_Extensions; 
 
 using SqlConnection = System.Data.SqlClient.SqlConnection;
 
@@ -152,7 +150,7 @@ namespace Vit.Db.DbMng.MsSql
                  {
                      return conn.ExecuteScalar(
                          "select filename from   master.dbo.sysdatabases  where name=@dbName",
-                         new { dbName = dbName ?? this.dbName }
+                         new Dictionary<string,object> { ["dbName"] = dbName ?? this.dbName }
                          , commandTimeout: commandTimeout) as string;
                  });
         }
@@ -215,7 +213,7 @@ namespace Vit.Db.DbMng.MsSql
                 var isOnline = Exec((conn) =>
                 {
                     return 0 != conn.ExecuteScalar<int>("select count(1) from sysdatabases where name =@dbName"
-                        , new { dbName = dbName }
+                        , new Dictionary<string, object> { ["dbName"] = dbName }
                         , commandTimeout: commandTimeout);
                 });
 
@@ -425,25 +423,25 @@ if Exists(select 1 from sysdatabases where  name =N'Lit_Base' and (status & 0x20
         /// <summary>
         /// 附加数据库
         /// </summary>
-        /// <param name="MdfPath">数据文件路径</param>
-        /// <param name="LogPath">日志文件路径</param>
-        public void Attach(string MdfPath, string LogPath)
+        /// <param name="mdfPath">数据文件路径</param>
+        /// <param name="logPath">日志文件路径</param>
+        public void Attach(string mdfPath, string logPath)
         {
-            Attach(dbName, MdfPath, LogPath);
+            Attach(dbName, mdfPath, logPath);
         }
 
         /// <summary>
         /// 附加数据库
         /// 注：会清空所有数据库参数
         /// </summary>
-        /// <param name="DBName">数据库名</param>
-        /// <param name="MdfPath">数据文件路径</param>
-        /// <param name="LogPath">日志文件路径</param>
-        public void Attach(string DBName, string MdfPath, string LogPath)
+        /// <param name="dbName">数据库名</param>
+        /// <param name="mdfPath">数据文件路径</param>
+        /// <param name="logPath">日志文件路径</param>
+        public void Attach(string dbName, string mdfPath, string logPath)
         {
             Exec((conn) =>
             {               
-                return conn.Execute("EXEC sp_attach_db @DBName, @MdfPath,@LogPath;",new { DBName, MdfPath, LogPath }, commandTimeout: commandTimeout);
+                return conn.Execute("EXEC sp_attach_db @dbName, @mdfPath,@logPath;", new Dictionary<string,object>{ ["dbName"] = dbName, ["mdfPath"] = mdfPath, ["logPath"] = logPath }, commandTimeout: commandTimeout);
             });
         }
 
@@ -457,7 +455,7 @@ if Exists(select 1 from sysdatabases where  name =N'Lit_Base' and (status & 0x20
         {
             Exec((conn) =>
             {     
-                return conn.Execute("EXEC sp_detach_db @dbName", new { dbName = dbName ?? this.dbName }, commandTimeout: commandTimeout);
+                return conn.Execute("EXEC sp_detach_db @dbName", new Dictionary<string, object> { ["dbName"] =  dbName ?? this.dbName }, commandTimeout: commandTimeout);
             });
         }
 
@@ -478,7 +476,7 @@ if Exists(select 1 from sysdatabases where  name =N'Lit_Base' and (status & 0x20
             return Exec((conn) =>
             {            
                 return (int)conn.ExecuteScalar("select count(*) from master..sysprocesses where dbid=db_id(@dbName);"
-                    , new { dbName = dbName??this.dbName }
+                    , new Dictionary<string, object> { ["dbName"] = dbName??this.dbName }
                     , commandTimeout: commandTimeout);
             });
         }
@@ -496,7 +494,7 @@ if Exists(select 1 from sysdatabases where  name =N'Lit_Base' and (status & 0x20
             Exec((conn) =>
             {              
                 return conn.Execute("declare @programName nvarchar(200), @spid nvarchar(20) declare cDblogin cursor for select cast(spid as varchar(20)) AS spid from master..sysprocesses where dbid=db_id(@dbName) open cDblogin fetch next from cDblogin into @spid while @@fetch_status=0 begin  IF @spid <> @@SPID exec( 'kill '+@spid) fetch next from cDblogin into @spid end close cDblogin deallocate cDblogin ",
-                    new { dbName = dbName?? this.dbName }
+                    new Dictionary<string, object> { ["dbName"] = dbName?? this.dbName }
                     , commandTimeout: commandTimeout);
             });
 
@@ -550,7 +548,7 @@ AND I.name IS NOT NULL
 AND I.is_disabled = 0
 and T.name=@tableName
 ";
-            var sqlList = conn.Query<string>(sql,new { tableName},commandTimeout: commandTimeout).ToList();
+            var sqlList = conn.Query<string>(sql,new Dictionary<string,object>{ ["tableName"]=tableName},commandTimeout: commandTimeout).ToList();
             #endregion
 
             if(sqlList.Count==0)
@@ -760,7 +758,7 @@ and T.name=@tableName
             return Exec((conn) =>
             {
                 conn.Execute("backup database @database to disk = @filePath "
-                    , new { database = this.dbName, filePath = bakFilePath }
+                    , new Dictionary<string, object> { ["database"] = this.dbName, ["filePath"] = bakFilePath }
                     , commandTimeout: commandTimeout);
                 return bakFilePath;
             });
@@ -919,7 +917,7 @@ and T.name=@tableName
 
 
                 conn.Execute(new StringBuilder("declare @DataPath nvarchar(260),@LogPath nvarchar(260); use [").Append(this.dbName).Append("]; set @DataPath= (SELECT top 1 RTRIM(o.filename) FROM dbo.sysfiles o WHERE o.groupid = (SELECT u.groupid FROM dbo.sysfilegroups u WHERE u.groupname = N'PRIMARY') and (o.status & 0x40) = 0 );  set @LogPath= (SELECT top 1 RTRIM(filename) FROM sysfiles WHERE (status & 0x40) <> 0); use [master]; ALTER DATABASE [").Append(this.dbName).Append("] SET OFFLINE WITH ROLLBACK IMMEDIATE; RESTORE DATABASE [").Append(this.dbName).Append("] FROM  DISK =@BakPath  WITH  FILE = 1,  RECOVERY ,  REPLACE ,  MOVE @LogName TO @LogPath,  MOVE @DataName TO @DataPath;").ToString()
-                    , new { DataName = strDataName, LogName = strLogName, BakPath = bakFilePath }
+                    , new Dictionary<string, object> { ["DataName"] = strDataName, ["LogName"] = strLogName, ["BakPath"] = bakFilePath }
                     , commandTimeout: commandTimeout);
 
                 return bakFilePath;

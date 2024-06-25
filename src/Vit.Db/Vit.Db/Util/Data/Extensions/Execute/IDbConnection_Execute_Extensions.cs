@@ -4,7 +4,7 @@ using System.Data;
 using System.Runtime.CompilerServices;
 
 
-namespace Vit.Extensions.Linq_Extensions.Execute
+namespace Vit.Extensions.Db_Extensions
 {
     public static partial class IDbConnection_Execute_Extensions
     {

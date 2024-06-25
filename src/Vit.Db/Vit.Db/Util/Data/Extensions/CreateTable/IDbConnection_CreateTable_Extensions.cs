@@ -3,7 +3,7 @@ using System.Data;
 
 using Vit.Db.Util.Data;
 
-namespace Vit.Extensions.Linq_Extensions
+namespace Vit.Extensions.Db_Extensions
 {
 
     public static partial class IDbConnection_CreateTable_Extensions

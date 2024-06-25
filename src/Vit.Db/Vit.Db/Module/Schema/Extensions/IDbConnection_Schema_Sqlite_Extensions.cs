@@ -1,15 +1,14 @@
 ﻿using System.Collections.Generic;
 using System.Data;
 using System.Linq;
+
 using Vit.Db.Module.Schema;
 using Vit.Db.Util.Data;
-using Vit.Extensions.Linq_Extensions.Execute;
-
-namespace Vit.Extensions.Linq_Extensions
+namespace Vit.Extensions.Db_Extensions
 {
     public static partial class IDbConnection_Schema_Sqlite_Extensions
     {
- 
+
 
         #region GetAllTableName
         /// <summary>
@@ -58,7 +57,7 @@ namespace Vit.Extensions.Linq_Extensions
 
 
                 #region (x.2)获取字段Clr类型
-                var dt = conn.ExecuteDataTable("select * from "+ conn.Quote(tableName) +" where 1=2");
+                var dt = conn.ExecuteDataTable("select * from " + conn.Quote(tableName) + " where 1=2");
                 foreach (DataColumn column in dt.Columns)
                 {
                     var field = entity.columns.Where(f => f.column_name == column.ColumnName).FirstOrDefault();
@@ -74,7 +73,7 @@ namespace Vit.Extensions.Linq_Extensions
                 }
                 #endregion
 
-                tables.Add(entity);                
+                tables.Add(entity);
             }
             return tables;
         }

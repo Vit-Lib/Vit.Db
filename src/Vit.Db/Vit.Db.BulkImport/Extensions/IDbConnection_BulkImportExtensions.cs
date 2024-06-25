@@ -1,7 +1,7 @@
 ﻿using System;
 using System.Data;
 
-namespace Vit.Extensions.Linq_Extensions
+namespace Vit.Extensions.Db_Extensions
 {
 
     public static partial class IDbConnection_BulkImportExtensions
@@ -34,7 +34,7 @@ namespace Vit.Extensions.Linq_Extensions
                         );
                     return;
 
-                case MySql.Data.MySqlClient.MySqlConnection mySqlConn:
+                case MySqlConnector.MySqlConnection mySqlConn:
                     mySqlConn.Import(
                         dt
                         , batchRowCount: batchRowCount, onProcess: onProcess
@@ -86,7 +86,7 @@ namespace Vit.Extensions.Linq_Extensions
                         , useTransaction: useTransaction, commandTimeout: commandTimeout
                         );
 
-                case MySql.Data.MySqlClient.MySqlConnection mySqlConn:
+                case MySqlConnector.MySqlConnection mySqlConn:
                     return mySqlConn.Import(
                         dr, tableName
                         , maxRowCount: maxRowCount, batchRowCount: batchRowCount, onProcess: onProcess

@@ -10,7 +10,7 @@ using SqlCommand = System.Data.SqlClient.SqlCommand;
 
 using Vit.Db.BulkImport;
 
-namespace Vit.Extensions.Linq_Extensions
+namespace Vit.Extensions.Db_Extensions
 {
     public static partial class MsSql_BulkImportExtensions
     {

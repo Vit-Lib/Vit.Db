@@ -1,10 +1,10 @@
 ﻿using System;
 using System.Data;
 using System.Text;
-using Vit.Db.Util.Data;
-using Vit.Extensions.Linq_Extensions.Execute;
 
-namespace Vit.Extensions.Linq_Extensions
+using Vit.Db.Util.Data;
+
+namespace Vit.Extensions.Db_Extensions
 {
     public static partial class IDbConnection_CreateTable_Sqlite_Extensions
     {

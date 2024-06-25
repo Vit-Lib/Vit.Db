@@ -6,7 +6,7 @@ using System.Runtime.CompilerServices;
 using Vit.Extensions.Json_Extensions;
 
 
-namespace Vit.Extensions.Linq_Extensions.Execute
+namespace Vit.Extensions.Db_Extensions
 {
     public static partial class IDbConnection_ExecuteScalar_Extensions
     {

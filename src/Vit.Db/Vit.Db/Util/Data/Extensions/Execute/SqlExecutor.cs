@@ -2,7 +2,7 @@
 using System.Collections.Generic;
 using System.Data;
 
-namespace Vit.Extensions.Linq_Extensions.Execute
+namespace Vit.Extensions.Db_Extensions
 {
     public class SqlExecutor
     {

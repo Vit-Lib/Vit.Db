@@ -1,16 +1,15 @@
 ﻿using System.Data;
-using Dapper;
 using System;
-using System.Data.SqlClient; 
+using System.Data.SqlClient;
 using Vit.Core.Module.Log;
 using SqlConnection = System.Data.SqlClient.SqlConnection;
 using System.IO;
 using System.Collections.Generic;
 using Vit.Core.Util.MethodExt;
-using System.Linq;
 using Vit.Extensions.Json_Extensions;
+ 
 
-namespace Vit.Extensions.Linq_Extensions
+namespace Vit.Extensions.Db_Extensions
 {
     public static partial class IDbConnection_MsSqlExtensions
     {
@@ -173,7 +172,7 @@ if Exists(select top 1 * from sysObjects where Id=OBJECT_ID(N'sqler_temp_filebuf
 if Exists(select top 1 * from sysObjects where Id=OBJECT_ID(N'sqler_temp_filebuffer') and xtype='U')
 	drop table sqler_temp_filebuffer;
 select @fileContent as fileContent into sqler_temp_filebuffer;
-", new { fileContent }, commandTimeout: commandTimeout);
+", new  Dictionary<string,object>{ ["fileContent"] =fileContent }, commandTimeout: commandTimeout);
 
 
                     //(x.3)从临时表读取二进制内容到目标文件
@@ -268,7 +267,7 @@ create table sqler_temp_filebuffer (fileContent varbinary(MAX) null);
                         conn.Execute(@"
 truncate table sqler_temp_filebuffer;
 insert into sqler_temp_filebuffer select @fileContent as fileContent;
-", new { fileContent = fileContent }, commandTimeout: commandTimeout);
+", new Dictionary<string, object> { ["fileContent"] = fileContent }, commandTimeout: commandTimeout);
 
                         // (x.x.2)从临时表读取二进制内容保存到临时文件
                         cmdResult = runCmd("BCP \"SELECT fileContent FROM sqler_temp_filebuffer\" queryout \"" + serverTempFilePath + "\" -T -i \"" + fmtFilePath + "\"");

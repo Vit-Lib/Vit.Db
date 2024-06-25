@@ -1,7 +1,7 @@
 ﻿using System.Data;
 using System.Runtime.CompilerServices;
 
-namespace Vit.Extensions.Linq_Extensions
+namespace Vit.Extensions.Db_Extensions
 {
 
     public static partial class IDbConnection_GetDbName_Extensions
@@ -12,7 +12,7 @@ namespace Vit.Extensions.Linq_Extensions
         [MethodImpl(MethodImplOptions.AggressiveInlining)]
         public static string MySql_GetDbName(this IDbConnection conn)
         {
-            return new MySql.Data.MySqlClient.MySqlConnectionStringBuilder(conn.ConnectionString).Database;
+            return new MySqlConnector.MySqlConnectionStringBuilder(conn.ConnectionString).Database;
         }
         #endregion
 

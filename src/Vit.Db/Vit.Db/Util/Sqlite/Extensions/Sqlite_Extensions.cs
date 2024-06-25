@@ -1,10 +1,7 @@
-﻿
+﻿using System.Runtime.CompilerServices;
 
-using System.Runtime.CompilerServices;
 
-using Vit.Extensions.Linq_Extensions.Execute;
-
-namespace Vit.Extensions
+namespace Vit.Extensions.Db_Extensions
 {
     public static partial class Sqlite_Extensions
     {
@@ -26,8 +23,8 @@ namespace Vit.Extensions
         /// <param name="commandTimeout">The time in seconds to wait for the command to execute. The default is 30 seconds.</param>
         [MethodImpl(MethodImplOptions.AggressiveInlining)]
         public static void Vacuum(this Microsoft.Data.Sqlite.SqliteConnection conn, int? commandTimeout = null)
-        {      
-            conn.Execute("VACUUM",commandTimeout: commandTimeout);
+        {
+            conn.Execute("VACUUM", commandTimeout: commandTimeout);
         }
         #endregion
 

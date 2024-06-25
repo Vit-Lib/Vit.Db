@@ -2,9 +2,8 @@
 using System.Text;
 using System;
 using Vit.Db.Util.Data;
-using Vit.Extensions.Linq_Extensions.Execute;
 
-namespace Vit.Extensions.Linq_Extensions
+namespace Vit.Extensions.Db_Extensions
 {
     public static partial class IDbConnection_CreateTable_MySql_Extensions
     {

@@ -12,5 +12,7 @@ namespace Vit.Db.Util.Data
         /// 数据库连接字符串
         /// </summary>
         public string ConnectionString { get; set; }
+
+        public object ext { get; set; }
     }
 }

@@ -4,9 +4,8 @@ using System.Linq;
 using Vit.Db.Module.Schema;
 using Vit.Db.Module.Schema.Extensions;
 using Vit.Db.Util.Data;
-using Vit.Extensions.Linq_Extensions.Execute;
 
-namespace Vit.Extensions.Linq_Extensions
+namespace Vit.Extensions.Db_Extensions
 {
     public static partial class IDbConnection_Schema_MySql_Extensions
     {

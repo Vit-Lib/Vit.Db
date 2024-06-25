@@ -1,22 +1,20 @@
-﻿using MySql.Data.MySqlClient;
+﻿
 using System;
 using System.Collections.Generic;
 using System.Data;
 using System.Text;
 
-using SqlConnection = MySql.Data.MySqlClient.MySqlConnection;
-using SqlCommand = MySql.Data.MySqlClient.MySqlCommand;
-//using SqlDataAdapter = MySql.Data.MySqlClient.MySqlDataAdapter;
-//using SqlDataReader= MySql.Data.MySqlClient.MySqlDataReader;
+using SqlConnection = MySqlConnector.MySqlConnection;
 
 using System.Linq;
 using System.IO;
 using Vit.Db.BulkImport;
 using Vit.Core.Util.MethodExt;
-using Vit.Extensions.Linq_Extensions.Execute;
-using Vit.Extensions.Data;
 
-namespace Vit.Extensions.Linq_Extensions
+using Vit.Extensions.Data;
+using MySqlConnector;
+
+namespace Vit.Extensions.Db_Extensions
 {
     public static partial class MySql_BulkImportExtensions
     {
@@ -66,10 +64,10 @@ namespace Vit.Extensions.Linq_Extensions
             Func<int> actionImportData = null;
 
 
-            #region (x.2)导入数据的逻辑           
+            #region (x.2)导入数据的逻辑
             actionImportData = () =>
             {
-                //批量导入                    
+                //批量导入
                 MySqlBulkLoader bulk = new MySqlBulkLoader(conn)
                 {
                     FieldTerminator = ",",

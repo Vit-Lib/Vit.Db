@@ -1,6 +1,7 @@
 ﻿using System;
 using System.Data.SqlClient;
 using System.Runtime.CompilerServices;
+
 using Vit.Core.Util.Common;
 using Vit.Core.Util.ConfigurationManager;
 
@@ -31,7 +32,7 @@ namespace Vit.Db.Util.Data
         /// <param name="configPath">在appsettings.json中的路径，默认："App.Db"</param>
         /// <returns></returns>
         [MethodImpl(MethodImplOptions.AggressiveInlining)]
-        public static Func<System.Data.IDbConnection> GetConnectionCreator(string configPath= "App.Db")
+        public static Func<System.Data.IDbConnection> GetConnectionCreator(string configPath = "App.Db")
         {
             return GetConnectionCreator(Appsettings.json.GetByPath<ConnectionInfo>(configPath ?? "App.Db"));
         }
@@ -63,8 +64,8 @@ namespace Vit.Db.Util.Data
         #region GetConnection
         [MethodImpl(MethodImplOptions.AggressiveInlining)]
         public static System.Data.IDbConnection GetConnection(ConnectionInfo info)
-        {    
-            switch (info?.type) 
+        {
+            switch (info?.type)
             {
                 case "mssql":
                     //使用SqlServer数据库
@@ -74,9 +75,9 @@ namespace Vit.Db.Util.Data
                     return MySql_GetConnection(info.ConnectionString);
                 case "sqlite":
                     //使用sqlite数据库
-                    return Sqlite_GetConnection(info.ConnectionString);         
-            }            
-            return null; 
+                    return Sqlite_GetConnection(info.ConnectionString);
+            }
+            return null;
         }
 
 
@@ -88,7 +89,7 @@ namespace Vit.Db.Util.Data
         [MethodImpl(MethodImplOptions.AggressiveInlining)]
         public static System.Data.IDbConnection GetConnection(string configPath = "App.Db")
         {
-            return GetConnection(Appsettings.json.GetByPath<ConnectionInfo>(configPath?? "App.Db"));
+            return GetConnection(Appsettings.json.GetByPath<ConnectionInfo>(configPath ?? "App.Db"));
         }
         #endregion
 
@@ -140,14 +141,14 @@ namespace Vit.Db.Util.Data
         #region MySql
 
         [MethodImpl(MethodImplOptions.AggressiveInlining)]
-        public static MySql.Data.MySqlClient.MySqlConnection MySql_GetConnection(string ConnectionString)
+        public static MySqlConnector.MySqlConnection MySql_GetConnection(string ConnectionString)
         {
-            return new MySql.Data.MySqlClient.MySqlConnection(ConnectionString);
+            return new MySqlConnector.MySqlConnection(ConnectionString);
         }
 
 
         [MethodImpl(MethodImplOptions.AggressiveInlining)]
-        public static MySql.Data.MySqlClient.MySqlConnection MySql_GetOpenConnection(string ConnectionString)
+        public static MySqlConnector.MySqlConnection MySql_GetOpenConnection(string ConnectionString)
         {
             var connection = MySql_GetConnection(ConnectionString);
             connection.Open();
@@ -161,14 +162,14 @@ namespace Vit.Db.Util.Data
         [MethodImpl(MethodImplOptions.AggressiveInlining)]
         public static Microsoft.Data.Sqlite.SqliteConnection Sqlite_GetConnection(string ConnectionString)
         {
-            
+
             return new Microsoft.Data.Sqlite.SqliteConnection(ConnectionString);
         }
 
         [MethodImpl(MethodImplOptions.AggressiveInlining)]
         public static Microsoft.Data.Sqlite.SqliteConnection Sqlite_GetOpenConnection(string ConnectionString)
         {
-            var conn= Sqlite_GetConnection(ConnectionString);
+            var conn = Sqlite_GetConnection(ConnectionString);
             conn.Open();
             return conn;
         }
@@ -216,9 +217,9 @@ namespace Vit.Db.Util.Data
         /// <param name="CacheSize"></param>
         /// <returns></returns>
         [MethodImpl(MethodImplOptions.AggressiveInlining)]
-        public static Microsoft.Data.Sqlite.SqliteConnection Sqlite_GetConnectionByFilePath(string filePath=null, int? CacheSize=null)
-        {     
-            return Sqlite_GetConnection(Sqlite_GetConnectionString(filePath,CacheSize:CacheSize));          
+        public static Microsoft.Data.Sqlite.SqliteConnection Sqlite_GetConnectionByFilePath(string filePath = null, int? CacheSize = null)
+        {
+            return Sqlite_GetConnection(Sqlite_GetConnectionString(filePath, CacheSize: CacheSize));
         }
 
         /// <summary>
@@ -228,12 +229,12 @@ namespace Vit.Db.Util.Data
         /// <param name="CacheSize"></param>
         /// <returns></returns>
         [MethodImpl(MethodImplOptions.AggressiveInlining)]
-        public static Microsoft.Data.Sqlite.SqliteConnection Sqlite_GetOpenConnectionByFilePath(string filePath = null,int? CacheSize = null)
+        public static Microsoft.Data.Sqlite.SqliteConnection Sqlite_GetOpenConnectionByFilePath(string filePath = null, int? CacheSize = null)
         {
-            var conn = Sqlite_GetConnectionByFilePath(filePath, CacheSize:CacheSize);
-            conn.Open();       
+            var conn = Sqlite_GetConnectionByFilePath(filePath, CacheSize: CacheSize);
+            conn.Open();
             return conn;
-        } 
+        }
 
 
         #endregion

@@ -1,15 +1,15 @@
-﻿using Dapper;
-using System;
+﻿using System;
 using System.Collections.Generic;
 using System.Data;
 using System.IO;
 using System.Linq;
 using System.Text;
+
 using Vit.Core.Util.Common;
 using Vit.Extensions;
-using Vit.Extensions.Linq_Extensions;
+using Vit.Extensions.Db_Extensions;
 
-using SqlConnection = MySql.Data.MySqlClient.MySqlConnection;
+using SqlConnection = MySqlConnector.MySqlConnection;
 
 namespace Vit.Db.DbMng
 {
@@ -21,9 +21,9 @@ namespace Vit.Db.DbMng
         /// <summary>
         ///
         /// </summary>
-        public MySqlDbMng(SqlConnection conn, string BackupPath = null):base(conn)
+        public MySqlDbMng(SqlConnection conn, string BackupPath = null) : base(conn)
         {
-     
+
             oriConnectionString = conn.ConnectionString;
 
             if (string.IsNullOrWhiteSpace(BackupPath))
@@ -39,7 +39,7 @@ namespace Vit.Db.DbMng
 
 
         #region 成员变量
-    
+
         string oriConnectionString;
 
         /// <summary>
@@ -99,7 +99,7 @@ namespace Vit.Db.DbMng
         {
             try
             {
-                var builder = new MySql.Data.MySqlClient.MySqlConnectionStringBuilder(oriConnectionString);
+                var builder = new MySqlConnector.MySqlConnectionStringBuilder(oriConnectionString);
                 builder.Database = "";
                 conn.ConnectionString = builder.ToString();
                 return run(conn);
@@ -113,7 +113,7 @@ namespace Vit.Db.DbMng
 
 
         #region Quote
-        protected override string Quote(string name) 
+        protected override string Quote(string name)
         {
             return conn.Quote(name);
         }
@@ -144,7 +144,7 @@ namespace Vit.Db.DbMng
         {
             try
             {
-                if (null != Exec(conn => conn.ExecuteScalar("show databases like @dbName", new { dbName = dbName })))
+                if (null != Exec(conn => conn.ExecuteScalar("show databases like @dbName", new Dictionary<string, object> { ["dbName"] = dbName })))
                 {
                     return EDataBaseState.online;
                 }
@@ -172,12 +172,12 @@ namespace Vit.Db.DbMng
         {
             // show full processlist  ;
             // select id, db, user, host, command, time, state, info	from information_schema.processlist	order by time desc 
-            return Convert.ToInt32(Exec(conn => conn.ExecuteScalar("select count(*)	from information_schema.processlist	where db=@dbName", new { dbName = dbName ?? this.dbName })));
+            return Convert.ToInt32(Exec(conn => conn.ExecuteScalar("select count(*)	from information_schema.processlist	where db=@dbName", new Dictionary<string, object> { ["dbName"] = dbName ?? this.dbName })));
         }
 
         #endregion
 
-               
+
         #region GetDataBaseVersion      
         public override string GetDataBaseVersion()
         {
@@ -250,7 +250,7 @@ namespace Vit.Db.DbMng
 
             #region (x.x)初始化环境
             builder.AppendLine();
-            
+
             builder.AppendLine("-- 关闭外键检查,避免建表时因外键约束而导致建表失败（建表为随机顺序）");
             builder.AppendLine("SET FOREIGN_KEY_CHECKS = 0;");
             builder.AppendLine();
@@ -318,7 +318,7 @@ ORDER BY TABLE_NAME ASC, INDEX_NAME ASC;";
                         #endregion
 
 
-                        var sqlList = conn.Query<string>(indexBuilderSql, new { dbName = dbName, tableName = name }).ToList();
+                        var sqlList = conn.Query<string>(indexBuilderSql, new Dictionary<string, object> { ["dbName"] = dbName, ["tableName"] = name }).ToList();
                         foreach (var sql in sqlList)
                         {
                             builder.Append(sql).AppendLine(";");
@@ -419,7 +419,7 @@ ORDER BY TABLE_NAME ASC, INDEX_NAME ASC;";
                 }
             }
             #endregion
-                       
+
 
             #region (x.6)创建存储过程
             {
@@ -428,7 +428,7 @@ ORDER BY TABLE_NAME ASC, INDEX_NAME ASC;";
                 builder.AppendLine();
                 builder.AppendLine("-- (x.6)创建存储过程");
 
-                var dtName = conn.ExecuteDataTable("show procedure status WHERE Db = @dbName AND `Type` = 'PROCEDURE'", new Dictionary<string,object> { ["dbName"] = dbName });
+                var dtName = conn.ExecuteDataTable("show procedure status WHERE Db = @dbName AND `Type` = 'PROCEDURE'", new Dictionary<string, object> { ["dbName"] = dbName });
 
 
                 var index = 0;
@@ -463,7 +463,7 @@ ORDER BY TABLE_NAME ASC, INDEX_NAME ASC;";
 
                     builder.AppendLine("  -- (x.x." + (++index) + ")创建存储过程 " + name);
 
-                    var dt = conn.ExecuteDataTable("SHOW CREATE view " + Quote(name) );
+                    var dt = conn.ExecuteDataTable("SHOW CREATE view " + Quote(name));
                     string sql = dt.Rows[0][1] as string;
                     builder.Append(sql).AppendLine(";");
                     builder.AppendLine(delimiter);
@@ -491,7 +491,7 @@ ORDER BY TABLE_NAME ASC, INDEX_NAME ASC;";
 
         #region SqlerBackuper
         //无需做 额外操作，mysql批量导入会处理索引问题，手动停用索引反而让效率变低
-        
+
         /*
         /// <summary>
         /// 批量导入表数据（可以通过先停用索引，在导入数据后再启用来提高效率）
@@ -550,7 +550,7 @@ ORDER BY TABLE_NAME ASC, INDEX_NAME ASC;";
         }
         #endregion
 
-  
+
 
 
         #region Restore
@@ -562,13 +562,13 @@ ORDER BY TABLE_NAME ASC, INDEX_NAME ASC;";
         /// <returns>备份文件的路径</returns>
         public void Restore(string filePath)
         {
-            RestoreSqler(filePath);     
+            RestoreSqler(filePath);
         }
         #endregion
 
 
-      
-                                 
+
+
 
 
     }

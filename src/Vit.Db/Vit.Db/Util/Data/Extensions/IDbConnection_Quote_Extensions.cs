@@ -3,7 +3,7 @@ using System.Data;
 using System.Runtime.CompilerServices;
 using Vit.Db.Util.Data;
 
-namespace Vit.Extensions.Linq_Extensions
+namespace Vit.Extensions.Db_Extensions
 {
 
     public static partial class IDbConnection_Quote_Extensions
@@ -56,7 +56,7 @@ namespace Vit.Extensions.Linq_Extensions
         }
 
         [MethodImpl(MethodImplOptions.AggressiveInlining)]
-        public static string Quote(this MySql.Data.MySqlClient.MySqlConnection conn, string name)
+        public static string Quote(this MySqlConnector.MySqlConnection conn, string name)
         {
             return MySql_Quote(conn,name);
         }
