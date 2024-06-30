@@ -37,9 +37,9 @@ jobs:
            set -e
            echo start build
 
-           export DOCKER_ImagePrefix="serset/"
-           export DOCKER_USERNAME="${{ secrets.DOCKER_USERNAME  }}"
-           export DOCKER_PASSWORD="${{ secrets.DOCKER_PASSWORD }}"
+           # export DOCKER_ImagePrefix="serset/"
+           # export DOCKER_USERNAME="${{ secrets.DOCKER_USERNAME  }}"
+           # export DOCKER_PASSWORD="${{ secrets.DOCKER_PASSWORD }}"
            export NUGET_SERVER="${{ secrets.NUGET_SERVER  }}"
            export NUGET_KEY="${{ secrets.NUGET_KEY }}"
            export WebDav_BaseUrl="${{ secrets.WebDav_BaseUrl }}"

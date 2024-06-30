@@ -3,8 +3,8 @@ using System.Collections.Generic;
 using System.Linq;
 using System.Threading.Tasks;
 
-using Vit.Extensions.Linq_Extensions;
 using Vit.Linq.ComponentModel;
+using Vit.Linq.Filter.ComponentModel;
 
 namespace Vit.Extensions.Linq_Extensions
 {
@@ -13,7 +13,7 @@ namespace Vit.Extensions.Linq_Extensions
     {
 
 
-        #region Ef_ToPageData       
+        #region Ef_ToPageData
         [System.Runtime.CompilerServices.MethodImpl(System.Runtime.CompilerServices.MethodImplOptions.AggressiveInlining)]
         public static async Task<PageData<T>> Ef_ToPageDataAsync<T>(this IQueryable query, PageInfo page)
         {
@@ -25,17 +25,17 @@ namespace Vit.Extensions.Linq_Extensions
             if (page != null)
                 queryPaged = queryPaged.IQueryable_Page(page);
 
-            var rows = await queryPaged.Ef_ToListAsync<T>();
+            var items = await queryPaged.Ef_ToListAsync<T>();
 
-            return new PageData<T>(page) { totalCount = totalCount, rows = rows };
+            return new PageData<T>(page) { totalCount = totalCount, items = items };
         }
 
         [System.Runtime.CompilerServices.MethodImpl(System.Runtime.CompilerServices.MethodImplOptions.AggressiveInlining)]
         public static async Task<PageData<T>> Ef_ToPageDataAsync<T>(this IQueryable query,
-            IFilterRule filter, IEnumerable<SortItem> sort, PageInfo page
+            FilterRule filter, IEnumerable<OrderField> sort, PageInfo page
         )
         {
-            return await query?.IQueryable_Where(filter).IQueryable_Sort(sort).Ef_ToPageDataAsync<T>(page);
+            return await query?.IQueryable_Where(filter).IQueryable_OrderBy(sort).Ef_ToPageDataAsync<T>(page);
         }
         #endregion
 
@@ -61,9 +61,9 @@ namespace Vit.Extensions.Linq_Extensions
             if (page != null)
                 queryPaged = queryPaged.IQueryable_Page(page);
 
-            var rows = await queryPaged.Ef_ToListAsync<T>();
+            var items = await queryPaged.Ef_ToListAsync<T>();
 
-            return new PageData<TResult>(page) { totalCount = totalCount, rows = rows.Select(selector).ToList() };
+            return new PageData<TResult>(page) { totalCount = totalCount, items = items.Select(selector).ToList() };
         }
 
         /// <summary>
@@ -79,10 +79,10 @@ namespace Vit.Extensions.Linq_Extensions
         /// <returns></returns>
         [System.Runtime.CompilerServices.MethodImpl(System.Runtime.CompilerServices.MethodImplOptions.AggressiveInlining)]
         public static async Task<PageData<TResult>> Ef_ToPageDataAsync<T, TResult>(this IQueryable query,
-            IFilterRule filter, IEnumerable<SortItem> sort, PageInfo page, Func<T, TResult> selector
+            FilterRule filter, IEnumerable<OrderField> sort, PageInfo page, Func<T, TResult> selector
         ) where T : class
         {
-            return await query?.IQueryable_Where(filter).IQueryable_Sort(sort).Ef_ToPageDataAsync(page, selector);
+            return await query?.IQueryable_Where(filter).IQueryable_OrderBy(sort).Ef_ToPageDataAsync(page, selector);
         }
         #endregion
 

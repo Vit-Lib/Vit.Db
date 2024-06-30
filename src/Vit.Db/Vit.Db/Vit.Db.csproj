@@ -13,7 +13,7 @@
     <PropertyGroup>
         <Authors>Lith</Authors>
         <Description>Database tools, tools for memory cache/Redis/Sqlite/Mysql/SqlServer</Description>
-        <PackageProjectUrl>https://github.com/serset/Vit.Library</PackageProjectUrl>
+        <PackageProjectUrl>https://github.com/serset/Vit.Db</PackageProjectUrl>
     </PropertyGroup>
 
     <PropertyGroup>
@@ -30,8 +30,8 @@
         <PackageReference Include="Microsoft.Data.Sqlite" Version="8.0.6" />
 
         <PackageReference Include="Vit.Core" Version="2.1.21" />
-        <PackageReference Include="Microsoft.Extensions.Caching.Memory" Version="2.1.0" />
-        <PackageReference Include="StackExchange.Redis" Version="2.2.88" />
+        <PackageReference Include="Microsoft.Extensions.Caching.Memory" Version="8.0.0" />
+        <PackageReference Include="StackExchange.Redis" Version="2.8.0" />
     </ItemGroup>
 
 </Project>

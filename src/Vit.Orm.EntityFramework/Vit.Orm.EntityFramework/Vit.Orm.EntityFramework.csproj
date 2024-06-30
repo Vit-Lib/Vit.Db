@@ -8,7 +8,7 @@
     <PropertyGroup>
         <Authors>Lith</Authors>
         <Description>entensions for EntityFramework</Description>
-        <PackageProjectUrl>https://github.com/serset/Vit.Library</PackageProjectUrl>
+        <PackageProjectUrl>https://github.com/serset/Vit.Db</PackageProjectUrl>
     </PropertyGroup>
 
     <PropertyGroup>
@@ -17,11 +17,11 @@
 
     <ItemGroup>
         <PackageReference Include="Vit.Core" Version="2.1.21" />
-        <PackageReference Include="Vit.Linq" Version="2.2.18" />
+        <PackageReference Include="Vit.Linq" Version="2.2.22" />
     </ItemGroup>
 
 
-    <ItemGroup  >
+    <ItemGroup>
         <PackageReference Include="Configuration.EntityFramework" Version="1.0.1.123" />
         <PackageReference Include="Microsoft.EntityFrameworkCore" Version="5.0.6" />
         <PackageReference Include="Microsoft.EntityFrameworkCore.Relational" Version="5.0.6" />

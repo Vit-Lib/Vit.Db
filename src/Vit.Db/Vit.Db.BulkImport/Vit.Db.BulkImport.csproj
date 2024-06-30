@@ -12,11 +12,11 @@
     <PropertyGroup>
         <Authors>Lith</Authors>
         <Description>Mysql/SqlServer/Sqlite bulk import or export tool</Description>
-        <PackageProjectUrl>https://github.com/serset/Vit.Library</PackageProjectUrl>
+        <PackageProjectUrl>https://github.com/serset/Vit.Db</PackageProjectUrl>
     </PropertyGroup>
 
     <PropertyGroup>
-        <DocumentationFile>bin\Debug\netstandard2.0\Vit.Db.BulkImport.xml</DocumentationFile>
+        <DocumentationFile>bin\Debug\netstandard2.1\Vit.Db.BulkImport.xml</DocumentationFile>
     </PropertyGroup>
 
 

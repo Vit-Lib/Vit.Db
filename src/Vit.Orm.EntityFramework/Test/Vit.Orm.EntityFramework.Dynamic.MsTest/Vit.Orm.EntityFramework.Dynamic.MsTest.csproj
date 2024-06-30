@@ -18,7 +18,6 @@
         <ProjectReference Include="..\..\Vit.Orm.EntityFramework.Dynamic\Vit.Orm.EntityFramework.Dynamic.csproj" />
     </ItemGroup>
 
-
     <ItemGroup>
         <None Update="appsettings.json">
             <CopyToOutputDirectory>Always</CopyToOutputDirectory>

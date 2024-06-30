@@ -4,25 +4,16 @@
         <TargetFramework>netstandard2.1</TargetFramework>
         <Version>3.0.0-temp</Version>
         <LangVersion>9.0</LangVersion>
-        <PreserveCompilationContext>true</PreserveCompilationContext>
     </PropertyGroup>
 
     <PropertyGroup>
         <Authors>Lith</Authors>
-        <Description>
-            extensions for dynamic compile of EntityFramework
-            add below config to csproj:
-            <PropertyGroup>
-                <PreserveCompilationContext>true</PreserveCompilationContext>
-                <!--if used-->
-                <MvcRazorExcludeRefAssembliesFromPublish>false</MvcRazorExcludeRefAssembliesFromPublish>
-            </PropertyGroup>
-        </Description>
-        <PackageProjectUrl>https://github.com/serset/Vit.Library</PackageProjectUrl>
+        <Description>extensions for dynamic compile of EntityFramework</Description>
+        <PackageProjectUrl>https://github.com/serset/Vit.Db</PackageProjectUrl>
     </PropertyGroup>
 
     <PropertyGroup>
-        <DocumentationFile>bin\Debug\netstandard2.0\Vit.Orm.EntityFramework.Dynamic.xml</DocumentationFile>
+        <DocumentationFile>bin\Debug\netstandard2.1\Vit.Orm.EntityFramework.Dynamic.xml</DocumentationFile>
     </PropertyGroup>
 
     <ItemGroup>
