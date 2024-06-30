@@ -14,7 +14,7 @@ namespace Vit.Orm.EntityFramework.Dynamic.MsTest
     {
         [TestMethod]
         public void DbSet_TestMethod()
-        {        
+        {
 
             #region (x.1)≤È—Ø
             {
@@ -44,7 +44,7 @@ namespace Vit.Orm.EntityFramework.Dynamic.MsTest
                 //(x.x.2)FirstOrDefault
                 var query = queryable.IQueryable_Where(new FilterRule { field = "id", @operator = "=", value = 2 });
                 var m = query.Ef_FirstOrDefault();
-                var id =  m.GetProperty<long>("id");
+                var id = m.GetProperty<long>("id");
                 Assert.AreEqual(id, 2);
             }
             #endregion

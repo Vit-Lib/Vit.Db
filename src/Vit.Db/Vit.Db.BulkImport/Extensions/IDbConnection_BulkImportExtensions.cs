@@ -26,7 +26,7 @@ namespace Vit.Extensions.Db_Extensions
         {
             switch (conn)
             {
-                case System.Data.SqlClient.SqlConnection msSqlConn:
+                case Microsoft.Data.SqlClient.SqlConnection msSqlConn:
                     msSqlConn.Import(
                         dt
                         , batchRowCount: batchRowCount, onProcess: onProcess
@@ -79,7 +79,7 @@ namespace Vit.Extensions.Db_Extensions
         {
             switch (conn)
             {
-                case System.Data.SqlClient.SqlConnection msSqlConn:
+                case Microsoft.Data.SqlClient.SqlConnection msSqlConn:
                     return msSqlConn.Import(
                         dr, tableName
                         , maxRowCount: maxRowCount, batchRowCount: batchRowCount, onProcess: onProcess

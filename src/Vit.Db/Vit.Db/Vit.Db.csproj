@@ -21,11 +21,6 @@
     </PropertyGroup>
 
     <ItemGroup>
-        <Compile Remove="Util\Sqlite\Extensions\SQLiteConnection_Extensions.cs" />
-    </ItemGroup>
-
-
-    <ItemGroup>
 
         <!--MySql-->
         <PackageReference Include="MySqlConnector" Version="2.3.7" />
@@ -36,7 +31,6 @@
 
         <PackageReference Include="Vit.Core" Version="2.1.21" />
         <PackageReference Include="Microsoft.Extensions.Caching.Memory" Version="2.1.0" />
-        <PackageReference Include="EPPlus.Core" Version="1.5.4" />
         <PackageReference Include="StackExchange.Redis" Version="2.2.88" />
     </ItemGroup>
 

@@ -17,26 +17,24 @@ namespace Vit.Orm.EntityFramework
 
         static EfHelp()
         {
-            DbContextInitorMap["mssql"] = new DbContextInitor_mssql();
-            DbContextInitorMap["mysql"] = new DbContextInitor_mysql();
-            DbContextInitorMap["sqlite"] = new DbContextInitor_sqlite();
+            DbContextInitorMap["SqlServer"] = new DbContextInitor_mssql();
+            DbContextInitorMap["MySql"] = new DbContextInitor_mysql();
+            DbContextInitorMap["Sqlite"] = new DbContextInitor_sqlite();
         }
         #endregion
 
 
 
-        #region CreateDbContext       
+        #region CreateDbContext
         /// <summary>
         /// 
         /// </summary>
         /// <typeparam name="TContext"></typeparam>
-        /// <param name="configPath">在appsettings.json中的路径，默认："App.Db"</param>
+        /// <param name="configPath">config path in file appsettings.json. default："App.Db"</param>
         /// <returns></returns>
-        [System.Runtime.CompilerServices.MethodImpl(System.Runtime.CompilerServices.MethodImplOptions.AggressiveInlining)]
         public static TContext CreateDbContext<TContext>(string configPath = "App.Db")
             where TContext : DbContext
         {
-         
             var serviceCollection = new ServiceCollection();
             serviceCollection.UseEntityFramework<TContext>(configPath);
 
@@ -46,9 +44,8 @@ namespace Vit.Orm.EntityFramework
         /// <summary>
         /// 
         /// </summary>
-        /// <param name="configPath">在appsettings.json中的路径，默认："App.Db"</param>
+        /// <param name="configPath">config path in file appsettings.json. default："App.Db"</param>
         /// <returns></returns>
-        [System.Runtime.CompilerServices.MethodImpl(System.Runtime.CompilerServices.MethodImplOptions.AggressiveInlining)]
         public static DbContext CreateDbContext(string configPath = "App.Db")
         {
             return CreateDbContext<DbContext>(configPath);

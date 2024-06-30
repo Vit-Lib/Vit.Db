@@ -14,7 +14,7 @@ namespace Vit.Extensions.Db_Extensions
 
         #region GetAllTableName
         /// <summary>
-        /// 获取所有表的名称
+        /// get all table names
         /// </summary>
         /// <param name="conn"></param>
         /// <returns></returns>
@@ -22,9 +22,9 @@ namespace Vit.Extensions.Db_Extensions
         {
             switch (conn.GetDbType())
             {
-                case EDbType.mssql: return conn.MsSql_GetAllTableName();
-                case EDbType.mysql: return conn.MySql_GetAllTableName();
-                case EDbType.sqlite: return conn.Sqlite_GetAllTableName();
+                case EDbType.SqlServer: return conn.MsSql_GetAllTableName();
+                case EDbType.MySql: return conn.MySql_GetAllTableName();
+                case EDbType.Sqlite: return conn.Sqlite_GetAllTableName();
             }
 
             throw new NotImplementedException($"NotImplementedException from IDbConnection.{nameof(GetAllTableName)} in {nameof(IDbConnection_Schema_Extensions)}.cs");
@@ -35,7 +35,7 @@ namespace Vit.Extensions.Db_Extensions
 
         #region GetAllData
         /// <summary>
-        /// 获取所有的表数据
+        /// get all data from all tables
         /// </summary>
         /// <param name="conn"></param>
         /// <returns></returns>
@@ -55,18 +55,18 @@ namespace Vit.Extensions.Db_Extensions
 
         #region GetSchema
         /// <summary>
-        /// 获取表的字段信息
+        /// get database table schema infos
         /// </summary>
         /// <param name="conn"></param>
-        /// <param name="tableNames">若不指定则返回所有表的字段信息</param>
+        /// <param name="tableNames">will get all table schema if null </param>
         /// <returns></returns>
         public static List<TableSchema> GetSchema(this IDbConnection conn, IEnumerable<string> tableNames = null)
         {
             switch (conn.GetDbType())
             {
-                case EDbType.mssql: return conn.MsSql_GetSchema();
-                case EDbType.mysql: return conn.MySql_GetSchema();
-                case EDbType.sqlite: return conn.Sqlite_GetSchema();
+                case EDbType.SqlServer: return conn.MsSql_GetSchema();
+                case EDbType.MySql: return conn.MySql_GetSchema();
+                case EDbType.Sqlite: return conn.Sqlite_GetSchema();
             }
 
             throw new NotImplementedException($"NotImplementedException from IDbConnection.{nameof(GetSchema)} in {nameof(IDbConnection_Schema_Extensions)}.cs");

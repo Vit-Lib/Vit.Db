@@ -1,12 +1,9 @@
 ﻿using System;
 using System.Data;
-using System.Data.SqlClient;
+using Microsoft.Data.SqlClient;
 using System.Text;
 
-using SqlConnection = System.Data.SqlClient.SqlConnection;
-using SqlCommand = System.Data.SqlClient.SqlCommand;
-//using SqlDataAdapter = System.Data.SqlClient.SqlDataAdapter;
-//using SqlDataReader = System.Data.SqlClient.SqlDataReader;
+using SqlConnection = Microsoft.Data.SqlClient.SqlConnection;
 
 using Vit.Db.BulkImport;
 
@@ -33,7 +30,7 @@ namespace Vit.Extensions.Db_Extensions
         public static void Import(this SqlConnection conn
             , DataTable dt
             , bool keepIdentity = true, SqlBulkCopyOptions? option = null
-            , int? batchRowCount = null, Action<int,int> onProcess = null
+            , int? batchRowCount = null, Action<int, int> onProcess = null
             , bool useTransaction = true, int? commandTimeout = null
             )
         {
@@ -65,7 +62,7 @@ namespace Vit.Extensions.Db_Extensions
         public static int Import(this SqlConnection conn
             , IDataReader dr, string tableName
             , bool keepIdentity = true, SqlBulkCopyOptions? option = null
-            , int maxRowCount = int.MaxValue, int? batchRowCount = null, Action<int,int> onProcess = null
+            , int maxRowCount = int.MaxValue, int? batchRowCount = null, Action<int, int> onProcess = null
             , bool useTransaction = true, int? commandTimeout = null
             )
         {

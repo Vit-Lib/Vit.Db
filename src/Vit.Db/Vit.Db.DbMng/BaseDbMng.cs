@@ -21,11 +21,11 @@ namespace Vit.Db.DbMng
         where DbConnection : IDbConnection
     {
 
-        protected DbConnection conn;
+        protected DbConnection connSource;
 
-        public BaseDbMng(DbConnection conn) 
+        public BaseDbMng(DbConnection connSource) 
         {
-            this.conn = conn; 
+            this.connSource = connSource; 
         }
 
         public static int commandTimeout = 0;
@@ -89,7 +89,7 @@ namespace Vit.Db.DbMng
         protected virtual int BulkImport(IDataReader dr, string tableName,int tableRowCount) 
         {
             int index = 0;
-            return conn.BulkImport(dr, tableName
+            return connSource.BulkImport(dr, tableName
                 , onProcess: (cur, sum) =>
                 {
                     index++;
@@ -130,7 +130,7 @@ namespace Vit.Db.DbMng
                 Log("");
                 Log(" --(x.1)创建(info.json)");
                 var backupInfo = new BackupInfo();
-                backupInfo.type = conn.GetDbType()?.ToString();
+                backupInfo.type = connSource.GetDbType()?.ToString();
                 backupInfo.version = GetDataBaseVersion();
                 backupInfo.backupTime = DateTime.Now.ToString("yyyy-MM-dd hh:mm:ss");
                 backupInfo.cmd = BackupInfo.defaultCmd;
@@ -167,10 +167,10 @@ namespace Vit.Db.DbMng
                 int sumTableCount;
                 string sqlitePath = Path.Combine(tempPath, "Data.sqlite3");
 
-                using (var connSqlite = ConnectionFactory.Sqlite_GetOpenConnectionByFilePath(useMemoryCache ? null : sqlitePath))
-                using (new SQLiteBackup(connSqlite, filePath: useMemoryCache ? sqlitePath : null))
+                using (var connTemp = ConnectionFactory.Sqlite_GetOpenConnectionByFilePath(useMemoryCache ? null : sqlitePath))
+                using (new SQLiteBackup(connTemp, destinationFilePath: useMemoryCache ? sqlitePath : null))
                 {
-                    var tableNames = conn.GetAllTableName();
+                    var tableNames = connSource.GetAllTableName();
                     sumTableCount = tableNames.Count;
 
                     int tbIndex = 0;
@@ -179,7 +179,7 @@ namespace Vit.Db.DbMng
                     {
                         tbIndex++;
 
-                        int tableRowCount = conn.ExecuteScalar<int>("select count(*) from " + conn.Quote(tableName), commandTimeout: commandTimeout);
+                        int tableRowCount = connSource.ExecuteScalar<int>("select count(*) from " + connSource.Quote(tableName), commandTimeout: commandTimeout);
 
 
                         Log("");
@@ -191,16 +191,16 @@ namespace Vit.Db.DbMng
                         bool ignoreTable = false;
            
 
-                        //若表数据条数为0则跳过                   
+                        //若表数据条数为0则跳过
                         ignoreTable = 0 == tableRowCount;
 
                         if (!ignoreTable)
                         {
-                            using (IDataReader dr = conn.ExecuteReader("select * from " + Quote(tableName), commandTimeout: commandTimeout))
+                            using (IDataReader dr = connSource.ExecuteReader("select * from " + Quote(tableName), commandTimeout: commandTimeout))
                             {
-                                connSqlite.Sqlite_CreateTable(dr, tableName);
+                                connTemp.Sqlite_CreateTable(dr, tableName);
                                 int index = 0;
-                                rowCount = connSqlite.Import(dr, tableName
+                                rowCount = connTemp.Import(dr, tableName
                                     , onProcess: (cur,sum) =>
                                     {
                                         index++;
@@ -361,7 +361,7 @@ namespace Vit.Db.DbMng
                 Log(" --(x.4)获取备份文件信息");
                 SqlerBackuper backuper = new SqlerBackuper();
                 backuper.dirPath = tempPath;
-                backuper.conn = conn;
+                backuper.conn = connSource;
                 backuper.Log = Log;
                 backuper.BulkImport = this.BulkImport;
 

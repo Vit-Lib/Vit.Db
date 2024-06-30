@@ -24,7 +24,7 @@ namespace Vit.Extensions.Db_Extensions
         [MethodImpl(MethodImplOptions.AggressiveInlining)]
         public static string MsSql_GetDbName(this IDbConnection conn)
         {
-            return new System.Data.SqlClient.SqlConnectionStringBuilder(conn.ConnectionString).InitialCatalog;
+            return new Microsoft.Data.SqlClient.SqlConnectionStringBuilder(conn.ConnectionString).InitialCatalog;
         }
         #endregion
     }

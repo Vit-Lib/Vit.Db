@@ -16,13 +16,13 @@ namespace Vit.Extensions.Db_Extensions
         {
             switch (conn.GetDbType())
             {
-                case EDbType.sqlite:
+                case EDbType.Sqlite:
                     return conn.Sqlite_Quote(name);
 
-                case EDbType.mysql:
+                case EDbType.MySql:
                     return conn.MySql_Quote(name);
 
-                case EDbType.mssql:
+                case EDbType.SqlServer:
                     return conn.MsSql_Quote(name);
             }
 
@@ -40,7 +40,7 @@ namespace Vit.Extensions.Db_Extensions
         }
 
         [MethodImpl(MethodImplOptions.AggressiveInlining)]
-        public static string Quote(this System.Data.SqlClient.SqlConnection conn, string name)
+        public static string Quote(this Microsoft.Data.SqlClient.SqlConnection conn, string name)
         {
             return MsSql_Quote(conn, name);
         }

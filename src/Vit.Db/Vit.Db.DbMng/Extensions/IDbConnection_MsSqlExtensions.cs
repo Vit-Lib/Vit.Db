@@ -1,8 +1,8 @@
 ﻿using System.Data;
 using System;
-using System.Data.SqlClient;
+using Microsoft.Data.SqlClient;
 using Vit.Core.Module.Log;
-using SqlConnection = System.Data.SqlClient.SqlConnection;
+using SqlConnection = Microsoft.Data.SqlClient.SqlConnection;
 using System.IO;
 using System.Collections.Generic;
 using Vit.Core.Util.MethodExt;
@@ -43,7 +43,7 @@ if Exists(select top 1 * from sysObjects where Id=OBJECT_ID(N'sqler_temp_filebuf
         public static int? commandTimeout = 0;
         //public static int? commandTimeout => Vit.Db.Util.Data.ConnectionFactory.CommandTimeout;
 
-        #region MsSql_ReadFileFromDisk   
+        #region MsSql_ReadFileFromDisk
 
         /// <summary>
         /// 读取SqlServer所在服务器中的文件内容，存储到本地。
@@ -54,12 +54,12 @@ if Exists(select top 1 * from sysObjects where Id=OBJECT_ID(N'sqler_temp_filebuf
         /// <param name="serverFilePath"></param>
         /// <param name="localFilePath"></param>
         /// <returns>读取的文件大小。单位：byte</returns>
-        public static int ReadFileFromDisk(this SqlConnection conn, string serverFilePath, string localFilePath)
+        public static int MsSql_ReadFileFromServer(this SqlConnection conn, string serverFilePath, string localFilePath)
         {
             // Sql DataReader中读取大字段到文件的方法
             // https://www.cnblogs.com/sundongxiang/archive/2009/09/14/1566443.html
 
-            // select BulkColumn  from OPENROWSET(BULK N'T:\机电合并.zip', SINGLE_BLOB) as content;      
+            // select BulkColumn  from OPENROWSET(BULK N'T:\机电合并.zip', SINGLE_BLOB) as content;
 
             return conn.MsSql_RunUseMaster((c) =>
              {
@@ -106,19 +106,19 @@ if Exists(select top 1 * from sysObjects where Id=OBJECT_ID(N'sqler_temp_filebuf
 
 
         /// <summary>
-        /// 从磁盘读取文件内容(文件内容会先缓存到内存，若读取超大文件，请使用ReadFileFromDisk代替)
+        /// 从磁盘读取文件内容(文件内容会先缓存到内存，若读取超大文件，请指定 localFilePath 进行分片读取
         /// </summary>
         /// <param name="conn"></param>
-        /// <param name="filePath"></param>
+        /// <param name="serverFilePath"></param>
         /// <returns>读取的文件的内容</returns>
-        public static byte[] MsSql_ReadFileFromDisk(this IDbConnection conn, string filePath)
+        public static byte[] MsSql_ReadFileFromServer(this IDbConnection conn, string serverFilePath)
         {
-            // select BulkColumn  from OPENROWSET(BULK N'T:\机电合并.zip', SINGLE_BLOB) as content;                 
+            // select BulkColumn  from OPENROWSET(BULK N'T:\机电合并.zip', SINGLE_BLOB) as content;
 
             return conn.MsSql_RunUseMaster((c) =>
             {
                 return conn.ExecuteScalar<byte[]>(
-                " select BulkColumn  from OPENROWSET(BULK N'" + filePath + "', SINGLE_BLOB) as content"
+                " select BulkColumn  from OPENROWSET(BULK N'" + serverFilePath + "', SINGLE_BLOB) as content"
                 , commandTimeout: commandTimeout);
             });
         }
@@ -127,7 +127,7 @@ if Exists(select top 1 * from sysObjects where Id=OBJECT_ID(N'sqler_temp_filebuf
         #endregion
 
 
-        #region MsSql_DeleteFile    
+        #region MsSql_DeleteFile
         /// <summary>
         /// 删除服务器文件
         /// </summary>
@@ -144,14 +144,14 @@ if Exists(select top 1 * from sysObjects where Id=OBJECT_ID(N'sqler_temp_filebuf
 
 
 
-        #region MsSql_WriteFileToDisk    
+        #region MsSql_WriteFileToDisk
         /// <summary>
         /// 写入文件到数据库所在服务器
         /// </summary>
         /// <param name="conn"></param>
         /// <param name="serverFilePath"></param>
         /// <param name="fileContent"></param>
-        public static void MsSql_WriteFileToDisk(this IDbConnection conn, string serverFilePath, byte[] fileContent)
+        public static void MsSql_WriteFileToServer(this IDbConnection conn, string serverFilePath, byte[] fileContent)
         {
             conn.MsSql_Cmdshell(runCmd =>
             {
@@ -382,7 +382,7 @@ if Exists(select top 1 * from sysObjects where Id=OBJECT_ID(N'sqler_temp_filebuf
         /// <param name="handleToRun"></param>
         public static void MsSql_Cmdshell(this IDbConnection conn, Action<Func<string, DataTable>> handleToRun)
         {
-            #region (x.1)method Body           
+            #region (x.1)method Body
             Action methodBody = () =>
             {
                 Func<string, DataTable> runCmd = (cmd) => conn.ExecuteDataTable("exec master..xp_cmdshell @cmd ", new Dictionary<string, object> { ["cmd"] = cmd });
@@ -394,7 +394,7 @@ if Exists(select top 1 * from sysObjects where Id=OBJECT_ID(N'sqler_temp_filebuf
             #region (x.2)确保启用cmdshell
             Method.Wrap(ref methodBody, (baseFunc) =>
                 {
-                    #region (x.x.1)获取是否启用                   
+                    #region (x.x.1)获取是否启用
                     bool cmdshellIsEnabled = false;
                     try
                     {
@@ -406,7 +406,7 @@ if Exists(select top 1 * from sysObjects where Id=OBJECT_ID(N'sqler_temp_filebuf
                     }
                     #endregion
 
-                    #region (x.x.2)若启用则直接执行后续任务                
+                    #region (x.x.2)若启用则直接执行后续任务
                     if (cmdshellIsEnabled)
                     {
                         baseFunc();
@@ -414,7 +414,7 @@ if Exists(select top 1 * from sysObjects where Id=OBJECT_ID(N'sqler_temp_filebuf
                     }
                     #endregion
 
-                    #region (x.x.3)没有启用，故手动启用，并在返回前手动关闭                  
+                    #region (x.x.3)没有启用，故手动启用，并在返回前手动关闭
                     try
                     {
                         conn.Execute(@"
@@ -452,7 +452,7 @@ RECONFIGURE;
             Method.Wrap(ref methodBody,
             (baseFunc) =>
             {
-                #region (x.x.1)获取是否启用                   
+                #region (x.x.1)获取是否启用
                 bool advancedOptionsIsOpened = false;
                 try
                 {
@@ -464,7 +464,7 @@ RECONFIGURE;
                 }
                 #endregion
 
-                #region (x.x.2)若启用则直接执行后续任务                
+                #region (x.x.2)若启用则直接执行后续任务
                 if (advancedOptionsIsOpened)
                 {
                     baseFunc();
@@ -472,7 +472,7 @@ RECONFIGURE;
                 }
                 #endregion
 
-                #region (x.x.3)没有启用，故手动启用，并在返回前手动关闭                  
+                #region (x.x.3)没有启用，故手动启用，并在返回前手动关闭
                 try
                 {
                     conn.Execute(@"

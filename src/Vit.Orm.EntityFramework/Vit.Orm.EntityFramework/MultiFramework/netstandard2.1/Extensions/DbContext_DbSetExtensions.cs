@@ -1,16 +1,14 @@
 ﻿using Microsoft.EntityFrameworkCore;
 using Microsoft.EntityFrameworkCore.Metadata;
+
 using System;
-using System.Collections.Generic;
-using System.Linq;
-using System.Reflection;
 
 namespace Vit.Extensions
 {
 
 
     public static partial class DbContext_DbSetExtensions
-    {     
+    {
 
 
         #region ChangeEntityMapedTable
@@ -22,7 +20,7 @@ namespace Vit.Extensions
         /// <param name="tableName"></param>
         /// <returns></returns>
         public static bool ChangeEntityMappedTable(this DbContext data, Type clrType, string tableName)
-        {           
+        {
             var entityType = data.Model.FindEntityType(clrType);
             if (entityType is IMutableEntityType m)
             {
@@ -39,8 +37,8 @@ namespace Vit.Extensions
         }
         #endregion
 
- 
- 
+
+
 
 
 

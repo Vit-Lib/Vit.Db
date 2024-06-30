@@ -7,8 +7,7 @@ namespace Vit.Orm.EntityFramework.DbContextInitor
     {
         public void AddDbContext<TContext>(IServiceCollection data, ConnectionInfo info) where TContext : DbContext
         {
-            //使用sqlite数据库
-            data.AddDbContext<TContext>(opt => opt.UseSqlite(info.ConnectionString));
+            data.AddDbContext<TContext>(opt => opt.UseSqlite(info.connectionString));
         }
     }
 

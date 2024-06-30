@@ -21,9 +21,9 @@ namespace Vit.Extensions.Db_Extensions
         {
             switch (conn.GetDbType())
             {
-                case EDbType.mssql: conn.MsSql_CreateTable(dt); return;
-                case EDbType.mysql: conn.MySql_CreateTable(dt); return;
-                case EDbType.sqlite: conn.Sqlite_CreateTable(dt); return;
+                case EDbType.SqlServer: conn.MsSql_CreateTable(dt); return;
+                case EDbType.MySql: conn.MySql_CreateTable(dt); return;
+                case EDbType.Sqlite: conn.Sqlite_CreateTable(dt); return;
             }
 
             throw new NotImplementedException($"NotImplementedException from {nameof(CreateTable)} in {nameof(IDbConnection_CreateTable_Extensions)}.cs");
@@ -43,9 +43,9 @@ namespace Vit.Extensions.Db_Extensions
         {
             switch (conn.GetDbType())
             {
-                case EDbType.mssql: conn.MsSql_CreateTable(dr, tableName); return;
-                case EDbType.mysql: conn.MySql_CreateTable(dr, tableName); return;
-                case EDbType.sqlite: conn.Sqlite_CreateTable(dr, tableName); return;
+                case EDbType.SqlServer: conn.MsSql_CreateTable(dr, tableName); return;
+                case EDbType.MySql: conn.MySql_CreateTable(dr, tableName); return;
+                case EDbType.Sqlite: conn.Sqlite_CreateTable(dr, tableName); return;
             }
 
             throw new NotImplementedException($"NotImplementedException from {nameof(CreateTable)} in {nameof(IDbConnection_CreateTable_Extensions)}.cs");

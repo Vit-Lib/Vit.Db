@@ -16,9 +16,9 @@ namespace Vit.Orm.EntityFramework
         ServiceProvider provider;
 
         /// <summary>
-        /// 初始化
+        ///
         /// </summary>
-        /// <param name="info">如：{"type":"mysql","ConnectionString":"xxx"}</param>
+        /// <param name="info"> demo : {"type":"MySql","connectionString":"xxx"}</param>
         public DbContextFactory<TContext> Init(ConnectionInfo info)
         {
             serviceCollection = new ServiceCollection();
@@ -29,9 +29,9 @@ namespace Vit.Orm.EntityFramework
         }
 
         /// <summary>
-        /// 使用appsettings.json中的配置初始化
+        ///  init with config from appsettings.json
         /// </summary>
-        /// <param name="configPath">在appsettings.json中的路径，默认："App.Db"</param>
+        /// <param name="configPath">config path in file appsettings.json. default："App.Db"</param>
         public DbContextFactory<TContext> Init(string configPath = null)
         {
             return Init(Appsettings.json.GetByPath<ConnectionInfo>(configPath ?? "App.Db"));

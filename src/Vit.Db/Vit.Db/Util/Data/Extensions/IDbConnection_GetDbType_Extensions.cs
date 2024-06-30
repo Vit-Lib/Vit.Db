@@ -10,41 +10,32 @@ namespace Vit.Extensions.Db_Extensions
 
         #region GetDbType
         /// <summary>
-        /// 获取数据库类型 如 mysql/mssql/sqlite
+        /// get database type, example:  mysql/mssql/sqlite
         /// </summary>
         /// <param name="conn"></param>
         /// <returns></returns>
         [MethodImpl(MethodImplOptions.AggressiveInlining)]
         public static EDbType? GetDbType(this IDbConnection conn)
         {
-            #region (x.1)判断是否为 mssql
-            if (conn is System.Data.SqlClient.SqlConnection)
+            if (conn is Microsoft.Data.SqlClient.SqlConnection)
             {
-                return EDbType.mssql;
+                return EDbType.SqlServer;
             }
-            #endregion
 
-            #region (x.2)判断是否为 mysql
             if (conn is MySqlConnector.MySqlConnection)
             {
-                return EDbType.mysql;
+                return EDbType.MySql;
             }
-            #endregion
 
-
-            #region (x.3)判断是否为 sqlite            
             //if (conn is System.Data.SQLite.SQLiteConnection)
             //{
             //    return EDbType.sqlite;
             //}
             if (conn is Microsoft.Data.Sqlite.SqliteConnection)
             {
-                return EDbType.sqlite;
+                return EDbType.Sqlite;
             }
-            #endregion
 
-
-            //(x.4)根据类名和命名空间名称判断
             return GetDbTypeFromTypeName(conn);
         }
         #endregion
@@ -52,7 +43,7 @@ namespace Vit.Extensions.Db_Extensions
 
         #region GetDbTypeFromTypeName
         /// <summary>
-        /// 获取数据库类型 如 mysql/mssql/sqlite
+        /// get database type, example:  mysql/mssql/sqlite
         /// </summary>
         /// <param name="obj"></param>
         /// <returns></returns>
@@ -65,17 +56,17 @@ namespace Vit.Extensions.Db_Extensions
 
             if (typeFullName.Contains("sqlite"))
             {
-                return EDbType.sqlite;
+                return EDbType.Sqlite;
             }
 
             if (typeFullName.Contains("mysql"))
             {
-                return EDbType.mysql;
+                return EDbType.MySql;
             }
 
-            if (typeFullName.Contains("mssql")|| typeFullName.Contains("sqlserver") || typeFullName.Contains(".sqlconnection"))
+            if (typeFullName.Contains("mssql")|| typeFullName.Contains("sqlserver") || typeFullName.Contains(".sqlconnection") || typeFullName.Contains(".sqlclient."))
             {
-                return EDbType.mssql;
+                return EDbType.SqlServer;
             }
 
             return null;

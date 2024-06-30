@@ -29,21 +29,21 @@ namespace Vit.Db.BulkImport
             switch (info.type?.ToLower())
             {
                 case "mssql": 
-                    MsSql_Import(info.ConnectionString
+                    MsSql_Import(info.connectionString
                         , dt
                         , batchRowCount: batchRowCount, onProcess: onProcess
                         , useTransaction: useTransaction, commandTimeout: commandTimeout
                         ); 
                     return;
                 case "mysql":
-                    MySql_Import(info.ConnectionString
+                    MySql_Import(info.connectionString
                         , dt
                         , batchRowCount: batchRowCount, onProcess: onProcess
                         , useTransaction: useTransaction, commandTimeout: commandTimeout
                         );
                     return;
                 case "sqlite": 
-                    Sqlite_Import(info.ConnectionString
+                    Sqlite_Import(info.connectionString
                         , dt
                         , batchRowCount: batchRowCount, onProcess: onProcess
                         , useTransaction: useTransaction, commandTimeout: commandTimeout
@@ -74,21 +74,21 @@ namespace Vit.Db.BulkImport
             switch (info.type?.ToLower())
             {
                 case "mssql":
-                    MsSql_Import(info.ConnectionString
+                    MsSql_Import(info.connectionString
                         , dr, tableName
                         , maxRowCount: maxRowCount, batchRowCount: batchRowCount, onProcess: onProcess
                         , useTransaction: useTransaction, commandTimeout: commandTimeout
                         ); 
                     return;
                 case "mysql":
-                    MySql_Import(info.ConnectionString
+                    MySql_Import(info.connectionString
                         , dr, tableName
                         , maxRowCount: maxRowCount, batchRowCount: batchRowCount, onProcess: onProcess
                         , useTransaction: useTransaction, commandTimeout: commandTimeout
                         );
                     return;
                 case "sqlite":
-                    Sqlite_Import(info.ConnectionString
+                    Sqlite_Import(info.connectionString
                         , dr, tableName
                         , maxRowCount: maxRowCount, batchRowCount: batchRowCount, onProcess: onProcess
                         , useTransaction: useTransaction, commandTimeout: commandTimeout

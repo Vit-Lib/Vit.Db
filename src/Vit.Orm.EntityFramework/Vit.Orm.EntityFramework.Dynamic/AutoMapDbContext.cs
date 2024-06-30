@@ -2,6 +2,7 @@
 using System;
 using System.Collections.Generic;
 using Vit.Db.Module.Schema;
+using Vit.Extensions.Db_Extensions;
 using Vit.Extensions.Linq_Extensions;
 
 namespace Vit.Orm.EntityFramework.Dynamic
@@ -51,36 +52,11 @@ namespace Vit.Orm.EntityFramework.Dynamic
                     connInfo = new Vit.Db.Util.Data.ConnectionInfo
                     {
                         type = IDbConnection_GetDbType_Extensions.GetDbTypeFromTypeName(relation)?.ToString(),
-                        ConnectionString = relation.ConnectionString
+                        connectionString = relation.ConnectionString
                     };
                     return;
                 }
-
-
-//                if (item is Microsoft.EntityFrameworkCore.Sqlite.Infrastructure.Internal.SqliteOptionsExtension sqlite)
-//                {
-//                    connInfo = new Vit.Db.Util.Data.ConnectionInfo { type = "sqlite", ConnectionString = sqlite.ConnectionString };
-//                }
-//                else if (item is Microsoft.EntityFrameworkCore.SqlServer.Infrastructure.Internal.SqlServerOptionsExtension mssql)
-//                {
-//                    connInfo = new Vit.Db.Util.Data.ConnectionInfo { type = "mssql", ConnectionString = mssql.ConnectionString };
-//                }
-//#if NETSTANDARD2_0
-//                else if (item is MySql.Data.EntityFrameworkCore.Infraestructure.MySQLOptionsExtension mysql)
-//                {
-//                    connInfo = new Vit.Db.Util.Data.ConnectionInfo { type = "mysql", ConnectionString = mysql.ConnectionString };
-//                }
-//#endif
-
-//#if NETSTANDARD2_1
-//                else if (item is Pomelo.EntityFrameworkCore.MySql.Infrastructure.Internal.MySqlOptionsExtension pomelo)
-//                {
-//                    connInfo = new Vit.Db.Util.Data.ConnectionInfo { type = "mysql", ConnectionString = pomelo.ConnectionString };
-//                }
-//#endif
-
             }
-
 
         }
 

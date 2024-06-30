@@ -1,61 +1,61 @@
 ﻿using System;
+
 using Microsoft.Data.Sqlite;
+
 using Vit.Db.Util.Data;
-using Vit.Extensions;
 
 namespace Vit.Db.Util.Sqlite
 {
     /// <summary>
     /// 
-    /// 关闭连接前拷贝数据库：
-    /// <para> //法1：                                                                                                          </para>
-    /// <para> bool userMemoryCache = true;                                                                                     </para> 
-    /// <para> using (var connSqlite = ConnectionFactory.Sqlite_GetOpenConnectionByFilePath(useMemoryCache ? null:sqlitePath))  </para>
-    /// <para> using (new SQLiteBackup(connSqlite, filePath:useMemoryCache ? sqlitePath:null))                                  </para>
+    /// backup sourceConn to destinationConn：
+    /// <para> // method 1:                                                                                                     </para>
+    /// <para> using (var sourceConn = ConnectionFactory.Sqlite_GetOpenConnectionByFilePath(sourceFilePath))                    </para>
+    /// <para> using (new SQLiteBackup(sourceConn, destinationConnectionString: destinationConnectionString ))                  </para>
     /// <para> {                                                                                                                </para>
-    /// <para>     //do something with  connSqlite                                                                              </para>
+    /// <para>     //do something with  sourceConn                                                                              </para>
     /// <para> }                                                                                                                </para>
     /// <para>                                                                                                                  </para>
-    /// <para> //法2：                                                                                                          </para>
-    /// <para> using (var connSqlite = ConnectionFactory.Sqlite_GetOpenConnectionByFilePath())                                  </para>
-    /// <para> using (new SQLiteBackup(connSqlite, filePath:sqlitePath))                                                        </para>
+    /// <para> // method 2:                                                                                                     </para>
+    /// <para> using (var sourceConn = ConnectionFactory.Sqlite_GetOpenConnectionByFilePath(sourceFilePath))                    </para>
+    /// <para> using (new SQLiteBackup(sourceConn, destinationFilePath:destinationFilePath))                                    </para>
     /// <para> {                                                                                                                </para>
-    /// <para>     //do something with  connSqlite                                                                              </para>
+    /// <para>     //do something with  sourceConn                                                                              </para>
     /// <para> }                                                                                                                </para>
     /// <para>                                                                                                                  </para>
-    /// <para> //法3：                                                                                                          </para>
-    /// <para> using (var connSqlite = ConnectionFactory.Sqlite_GetOpenConnectionByFilePath())                                  </para>
-    /// <para> using (var connSqliteLocal = ConnectionFactory.Sqlite_GetOpenConnectionByFilePath(sqlitePath))                   </para>
+    /// <para> // method 3:                                                                                                     </para>
+    /// <para> using (var sourceConn = ConnectionFactory.Sqlite_GetOpenConnectionByFilePath(sourceFilePath))                    </para>
+    /// <para> using (var connDestination = ConnectionFactory.Sqlite_GetOpenConnectionByFilePath(destinationFilePath))          </para>
     /// <para> {                                                                                                                </para>
-    /// <para>     //do something with  connSqlite                                                                              </para>
-    /// <para>     connSqlite.BackupDatabase(connSqliteLocal);                                                                  </para>
+    /// <para>     //do something connSource                                                                                    </para>
+    /// <para>     sourceConn.BackupDatabase(connDestination);                                                                  </para>
     /// <para> }                                                                                                                </para>
     /// 
     /// </summary>
     public class SQLiteBackup : IDisposable
     {
 
-        SqliteConnection sourceConn=null;
-        string ConnectionString=null;      
-        public SQLiteBackup(SqliteConnection sourceConn,string ConnectionString=null,string filePath=null)
+        SqliteConnection sourceConn = null;
+        string destinationConnectionString = null;
+        public SQLiteBackup(SqliteConnection sourceConn, string destinationConnectionString = null, string destinationFilePath = null)
         {
             this.sourceConn = sourceConn;
 
-            if (ConnectionString == null && filePath != null) 
+            if (destinationConnectionString == null && destinationFilePath != null)
             {
-                ConnectionString = ConnectionFactory.Sqlite_GetConnectionString(filePath);
+                destinationConnectionString = ConnectionFactory.Sqlite_GetConnectionString(destinationFilePath);
             }
 
-            this.ConnectionString = ConnectionString;
+            this.destinationConnectionString = destinationConnectionString;
         }
         public void Dispose()
         {
-            if (sourceConn == null|| ConnectionString == null)
+            if (sourceConn == null || destinationConnectionString == null)
                 return;
 
-            using (var connSqliteLocal = ConnectionFactory.Sqlite_GetOpenConnection(ConnectionString))
+            using (var connDestination = ConnectionFactory.Sqlite_GetOpenConnection(destinationConnectionString))
             {
-                sourceConn.BackupDatabase(connSqliteLocal);
+                sourceConn.BackupDatabase(connDestination);
             }
         }
     }

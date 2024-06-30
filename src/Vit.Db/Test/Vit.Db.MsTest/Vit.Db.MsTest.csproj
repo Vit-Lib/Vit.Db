@@ -1,4 +1,4 @@
-<Project Sdk="Microsoft.NET.Sdk">
+﻿<Project Sdk="Microsoft.NET.Sdk">
 
     <PropertyGroup>
         <TargetFramework>net6.0</TargetFramework>
@@ -15,14 +15,14 @@
     </ItemGroup>
 
     <ItemGroup>
-        <ProjectReference Include="..\..\Vit.Orm.EntityFramework\Vit.Orm.EntityFramework.csproj" />
+        <ProjectReference Include="..\..\Vit.Db.BulkImport\Vit.Db.BulkImport.csproj" />
+        <ProjectReference Include="..\..\Vit.Db.DbMng\Vit.Db.DbMng.csproj" />
+        <ProjectReference Include="..\..\Vit.Db\Vit.Db.csproj" />
     </ItemGroup>
+
 
     <ItemGroup>
         <None Update="appsettings.json">
-            <CopyToOutputDirectory>Always</CopyToOutputDirectory>
-        </None>
-        <None Update="Data\sqlite.db">
             <CopyToOutputDirectory>Always</CopyToOutputDirectory>
         </None>
     </ItemGroup>

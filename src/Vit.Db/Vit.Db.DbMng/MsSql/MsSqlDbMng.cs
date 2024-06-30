@@ -23,9 +23,9 @@ using System.Text.RegularExpressions;
 
 using Vit.Core.Module.Log;
 using Vit.Core.Util.Common;
-using Vit.Extensions.Db_Extensions; 
+using Vit.Extensions.Db_Extensions;
 
-using SqlConnection = System.Data.SqlClient.SqlConnection;
+using SqlConnection = Microsoft.Data.SqlClient.SqlConnection;
 
 namespace Vit.Db.DbMng.MsSql
 {
@@ -37,13 +37,13 @@ namespace Vit.Db.DbMng.MsSql
     ///             备份、还原
     /// </summary>
     public partial class MsSqlDbMng : BaseDbMng<SqlConnection>
-    {    
+    {
 
         #region 构造函数
         /// <summary>
         ///
         /// </summary>
-        public MsSqlDbMng(SqlConnection conn, string BackupPath = null, string mdfPath = null):base(conn)
+        public MsSqlDbMng(SqlConnection conn, string BackupPath = null, string mdfPath = null) : base(conn)
         {
             if (string.IsNullOrWhiteSpace(BackupPath))
             {
@@ -58,7 +58,7 @@ namespace Vit.Db.DbMng.MsSql
         #endregion
 
 
-        #region 成员变量    
+        #region 成员变量
 
 
         /// <summary>
@@ -68,7 +68,7 @@ namespace Vit.Db.DbMng.MsSql
 
 
         #region 数据库的路径
-
+        public char PathSeparator = '/';
         /// <summary>
         /// 数据库文件所在文件夹
         /// 空或空字符串：系统默认路径       其它：指定路径
@@ -90,6 +90,22 @@ namespace Vit.Db.DbMng.MsSql
             }
         }
 
+        public string Path_Combine(params string[] path)
+        {
+            return String.Join(PathSeparator, path);
+        }
+        public string Path_GetDirectoryName(string path)
+        {
+            var index = path.LastIndexOfAny(new[] { '\\', '/' });
+            return path.Substring(0, index);
+        }
+
+        public string GetRelativePathInServer(params string[] path)
+        {
+            return MdfFileDirectory + PathSeparator + String.Join(PathSeparator, path);
+        }
+
+
 
         #endregion
 
@@ -110,7 +126,7 @@ namespace Vit.Db.DbMng.MsSql
         {
             return Path.Combine(BackupPath, fileName);
         }
-        #endregion      
+        #endregion
 
 
         #region BackupFile_GetFileInfos
@@ -144,13 +160,13 @@ namespace Vit.Db.DbMng.MsSql
         /// 例：C:\Program Files\Microsoft SQL Server\MSSQL11.MSSQLSERVER\MSSQL\DATA\Db_Dev_Data.MDF
         /// </summary>
         /// <returns></returns>
-        private string GetMdfPath(string dbName=null)
+        private string GetMdfPath(string dbName = null)
         {
             return Exec((conn) =>
                  {
                      return conn.ExecuteScalar(
-                         "select filename from   master.dbo.sysdatabases  where name=@dbName",
-                         new Dictionary<string,object> { ["dbName"] = dbName ?? this.dbName }
+                         "select filename from master.dbo.sysdatabases  where name=@dbName",
+                         new Dictionary<string, object> { ["dbName"] = dbName ?? this.dbName }
                          , commandTimeout: commandTimeout) as string;
                  });
         }
@@ -165,14 +181,14 @@ namespace Vit.Db.DbMng.MsSql
         /// </summary>
         /// <returns></returns>
         private string GetDefaultMdfDirectory()
-        {            
+        {
             string directory =
                 Exec((conn) =>
                 {
                     return conn.ExecuteScalar("select filename from dbo.sysfiles where fileid = 1", commandTimeout: commandTimeout) as string;
                 });
 
-            return string.IsNullOrEmpty(directory) ? null : Path.GetDirectoryName(directory);
+            return Path_GetDirectoryName(directory);
         }
         #endregion
 
@@ -186,19 +202,19 @@ namespace Vit.Db.DbMng.MsSql
         /// <param name="run"></param>
         private T Exec<T>(Func<IDbConnection, T> run)
         {
-            return conn.MsSql_RunUseMaster(run);           
+            return connSource.MsSql_RunUseMaster(run);
         }
         #endregion
 
         #region Quote
         protected override string Quote(string name)
         {
-            return conn.Quote(name);
+            return connSource.Quote(name);
         }
         #endregion
 
 
-        
+
 
         #region GetDataBaseState 获取数据库状态      
 
@@ -229,13 +245,13 @@ namespace Vit.Db.DbMng.MsSql
 
             try
             {
-                GetPrimaryFileInfo(Path.Combine(MdfFileDirectory, dbName + "_Data.MDF"));
+                GetPrimaryFileInfo(GetRelativePathInServer(dbName + "_Data.MDF"));
                 return EDataBaseState.offline;
             }
             catch { }
             try
             {
-                GetPrimaryFileInfo(Path.Combine(MdfFileDirectory, dbName + ".MDF"));
+                GetPrimaryFileInfo(GetRelativePathInServer(dbName + ".MDF"));
                 return EDataBaseState.offline;
             }
             catch { }
@@ -245,7 +261,7 @@ namespace Vit.Db.DbMng.MsSql
 
         #endregion
 
-                     
+
 
         #region  获取MDF文件的信息
         /// <summary>
@@ -259,8 +275,8 @@ namespace Vit.Db.DbMng.MsSql
             {
                 return conn.ExecuteDataTable(
                     "dbcc checkprimaryfile (@mdfFilePath, 3);"
-                    , new Dictionary<string,object>{["mdfFilePath"]= mdfFilePath }
-                    , commandTimeout: commandTimeout);           
+                    , new Dictionary<string, object> { ["mdfFilePath"] = mdfFilePath }
+                    , commandTimeout: commandTimeout);
             });
         }
         #endregion      
@@ -283,48 +299,48 @@ namespace Vit.Db.DbMng.MsSql
 
 
         #region GetDataBaseVersion      
-        public override string GetDataBaseVersion() 
+        public override string GetDataBaseVersion()
         {
             try
             {
                 return Exec((conn) =>
                 {
-                    return  conn.ExecuteScalar<string>("select @@version", commandTimeout: commandTimeout);
+                    return conn.ExecuteScalar<string>("select @@version", commandTimeout: commandTimeout);
                 });
             }
             catch (Exception ex)
             {
                 Logger.Error(ex);
             }
-            return null;            
+            return null;
         }
         #endregion
 
 
         #region BuildCreateDataBaseSql
-      
+
         public override string BuildCreateDataBaseSql()
-        {     
-            StringBuilder builder = new StringBuilder(); 
+        {
+            StringBuilder builder = new StringBuilder();
             #region 构建 建库语句           
-            using (var dr = conn.ExecuteReader(DataBaseStructBuilder, commandTimeout: commandTimeout)) 
+            using (var dr = connSource.ExecuteReader(DataBaseStructBuilder, commandTimeout: commandTimeout))
             {
-                while(true) 
+                while (true)
                 {
-                    if (!dr.Read()) 
+                    if (!dr.Read())
                     {
                         if (dr.NextResult())
                         {
                             continue;
                         }
-                        else 
+                        else
                         {
                             break;
                         }
                     }
 
                     int FieldCount = dr.FieldCount;
-                    for (var index = 0; index < FieldCount; index++) 
+                    for (var index = 0; index < FieldCount; index++)
                     {
                         builder.Append(dr[index]);
                     }
@@ -337,7 +353,7 @@ namespace Vit.Db.DbMng.MsSql
         #endregion
 
 
-        #region CreateDataBase 创建数据库       
+        #region CreateDataBase 创建数据库
 
         /// <summary>
         /// 若数据库不存在，则创建数据库
@@ -352,8 +368,7 @@ namespace Vit.Db.DbMng.MsSql
             //使用设定的路径创建数据库
             if (!string.IsNullOrEmpty(MdfFileDirectory))
             {
-                //string strDBPath = Path.Combine(MdfFileDirectory.Replace("'", "''"), strDBName);
-                string strDBPath = MdfFileDirectory.Replace("'", "''") + "/" + strDBName;
+                string strDBPath = GetRelativePathInServer(strDBName).Replace("'", "''");
                 builder.Append(" ON PRIMARY ( NAME = N'").Append(strDBName).Append("_Data',FILENAME = N'").Append(strDBPath).Append("_Data.MDF' ,FILEGROWTH = 10%) LOG ON ( NAME =N'").Append(strDBName).Append("_Log',FILENAME = N'").Append(strDBPath).Append("_Log.LDF' ,FILEGROWTH = 10%) ");
             }
             builder.Append("; if Exists(select 1 from sysdatabases where  name ='").Append(strDBName).Append("' and (status & 0x200) != 0) ALTER DATABASE [").Append(dbName).Append("] SET ONLINE; ");
@@ -379,7 +394,7 @@ if Exists(select 1 from sysdatabases where  name =N'Lit_Base' and (status & 0x20
         #endregion
 
 
-        #region DropDataBase 删除数据库       
+        #region DropDataBase 删除数据库
 
         /// <summary>
         /// 删除数据库
@@ -400,7 +415,7 @@ if Exists(select 1 from sysdatabases where  name =N'Lit_Base' and (status & 0x20
         /// </summary>
         public void Attach()
         {
-            string mdfPath = Path.Combine(MdfFileDirectory, dbName + "_Data.MDF");
+            string mdfPath = GetRelativePathInServer(dbName + "_Data.MDF");
             try
             {
                 GetPrimaryFileInfo(mdfPath);
@@ -409,7 +424,7 @@ if Exists(select 1 from sysdatabases where  name =N'Lit_Base' and (status & 0x20
             {
                 try
                 {
-                    mdfPath = Path.Combine(MdfFileDirectory, dbName + ".MDF");
+                    mdfPath = GetRelativePathInServer(dbName + ".MDF");
                     GetPrimaryFileInfo(mdfPath);
                 }
                 catch
@@ -417,7 +432,7 @@ if Exists(select 1 from sysdatabases where  name =N'Lit_Base' and (status & 0x20
                     throw e;
                 }
             }
-            Attach(dbName, mdfPath, Path.Combine(MdfFileDirectory,dbName + "_Log.LDF") );
+            Attach(dbName, mdfPath, GetRelativePathInServer(dbName + "_Log.LDF"));
         }
 
         /// <summary>
@@ -440,8 +455,8 @@ if Exists(select 1 from sysdatabases where  name =N'Lit_Base' and (status & 0x20
         public void Attach(string dbName, string mdfPath, string logPath)
         {
             Exec((conn) =>
-            {               
-                return conn.Execute("EXEC sp_attach_db @dbName, @mdfPath,@logPath;", new Dictionary<string,object>{ ["dbName"] = dbName, ["mdfPath"] = mdfPath, ["logPath"] = logPath }, commandTimeout: commandTimeout);
+            {
+                return conn.Execute("EXEC sp_attach_db @dbName, @mdfPath,@logPath;", new Dictionary<string, object> { ["dbName"] = dbName, ["mdfPath"] = mdfPath, ["logPath"] = logPath }, commandTimeout: commandTimeout);
             });
         }
 
@@ -454,14 +469,14 @@ if Exists(select 1 from sysdatabases where  name =N'Lit_Base' and (status & 0x20
         public void Detach(string dbName = null)
         {
             Exec((conn) =>
-            {     
-                return conn.Execute("EXEC sp_detach_db @dbName", new Dictionary<string, object> { ["dbName"] =  dbName ?? this.dbName }, commandTimeout: commandTimeout);
+            {
+                return conn.Execute("EXEC sp_detach_db @dbName", new Dictionary<string, object> { ["dbName"] = dbName ?? this.dbName }, commandTimeout: commandTimeout);
             });
         }
 
         #endregion
 
-        
+
 
 
         #region 获取数据库当前连接数 
@@ -471,12 +486,12 @@ if Exists(select 1 from sysdatabases where  name =N'Lit_Base' and (status & 0x20
         /// </summary>
         /// <param name="dbName"></param>
         /// <returns></returns>
-        public int GetProcessCount(string dbName=null)
+        public int GetProcessCount(string dbName = null)
         {
             return Exec((conn) =>
-            {            
+            {
                 return (int)conn.ExecuteScalar("select count(*) from master..sysprocesses where dbid=db_id(@dbName);"
-                    , new Dictionary<string, object> { ["dbName"] = dbName??this.dbName }
+                    , new Dictionary<string, object> { ["dbName"] = dbName ?? this.dbName }
                     , commandTimeout: commandTimeout);
             });
         }
@@ -489,12 +504,12 @@ if Exists(select 1 from sysdatabases where  name =N'Lit_Base' and (status & 0x20
         /// <summary>
         /// 强制关闭数据库的所有连接进程
         /// </summary>
-        public void KillProcess(string dbName=null)
+        public void KillProcess(string dbName = null)
         {
             Exec((conn) =>
-            {              
+            {
                 return conn.Execute("declare @programName nvarchar(200), @spid nvarchar(20) declare cDblogin cursor for select cast(spid as varchar(20)) AS spid from master..sysprocesses where dbid=db_id(@dbName) open cDblogin fetch next from cDblogin into @spid while @@fetch_status=0 begin  IF @spid <> @@SPID exec( 'kill '+@spid) fetch next from cDblogin into @spid end close cDblogin deallocate cDblogin ",
-                    new Dictionary<string, object> { ["dbName"] = dbName?? this.dbName }
+                    new Dictionary<string, object> { ["dbName"] = dbName ?? this.dbName }
                     , commandTimeout: commandTimeout);
             });
 
@@ -535,7 +550,7 @@ deallocate   cDblogin
         /// <param name="tableName"></param>
         /// <param name="tableRowCount"></param>
         /// <returns></returns>
-        protected override int BulkImport(IDataReader dr, string tableName,int tableRowCount)
+        protected override int BulkImport(IDataReader dr, string tableName, int tableRowCount)
         {
 
             #region (x.1)获取启用的索引
@@ -548,16 +563,16 @@ AND I.name IS NOT NULL
 AND I.is_disabled = 0
 and T.name=@tableName
 ";
-            var sqlList = conn.Query<string>(sql,new Dictionary<string,object>{ ["tableName"]=tableName},commandTimeout: commandTimeout).ToList();
+            var sqlList = connSource.Query<string>(sql, new Dictionary<string, object> { ["tableName"] = tableName }, commandTimeout: commandTimeout).ToList();
             #endregion
 
-            if(sqlList.Count==0)
+            if (sqlList.Count == 0)
                 return BulkImport__(dr, tableName, tableRowCount);
 
             try
             {
-                var sql_diableIndex = string.Join(" DISABLE;  ",sqlList) + " DISABLE;  ";
-                conn.Execute(sql_diableIndex, commandTimeout: commandTimeout);
+                var sql_diableIndex = string.Join(" DISABLE;  ", sqlList) + " DISABLE;  ";
+                connSource.Execute(sql_diableIndex, commandTimeout: commandTimeout);
 
                 return BulkImport__(dr, tableName, tableRowCount);
             }
@@ -566,14 +581,14 @@ and T.name=@tableName
                 try
                 {
                     var sql_rebuildIndex = string.Join(" REBUILD;  ", sqlList) + " REBUILD;  ";
-                    conn.Execute(sql_rebuildIndex, commandTimeout: commandTimeout);
+                    connSource.Execute(sql_rebuildIndex, commandTimeout: commandTimeout);
                 }
                 catch (Exception ex)
                 {
                     Logger.Error(ex);
-                }               
+                }
             }
-           
+
         }
 
 
@@ -585,7 +600,7 @@ and T.name=@tableName
         /// <param name="tableRowCount"></param>
         /// <param name="srid">WGS84 — SRID 4326</param>
         /// <returns></returns>
-        int BulkImport__(IDataReader dr, string tableName, int tableRowCount,int srid= 4326)
+        int BulkImport__(IDataReader dr, string tableName, int tableRowCount, int srid = 4326)
         {
             int index = 0;
 
@@ -594,7 +609,7 @@ and T.name=@tableName
             #region 处理 geometry类型
             // https://www.itdaan.com/tw/5d63863f347c9a22d2736beebc92d758
 
-            var schema = conn.MsSql_GetSchema(new[] { tableName });
+            var schema = connSource.MsSql_GetSchema(new[] { tableName });
 
             //SqlGeometry
             if (schema != null && schema.Count > 0)
@@ -603,24 +618,26 @@ and T.name=@tableName
                     .Where(col => col.column_clr_type == typeof(SqlGeometry))
                     .Select(c => c.column_name).ToList();
 
-                if (columnNames.Count > 0) 
+                if (columnNames.Count > 0)
                 {
-                    beforeImport = dataTable => {
+                    beforeImport = dataTable =>
+                    {
 
                         dataTable.BeginLoadData();
 
                         //(x.1)构建 map  string Col -> Geometry Col
                         var colMap = columnNames
-                        .Select(colName => {
+                        .Select(colName =>
+                        {
                             var col = dataTable.Columns[colName];
-                            if(col?.DataType==typeof(string))
-                            return col;
+                            if (col?.DataType == typeof(string))
+                                return col;
                             return null;
-                         }).Where(m=>m!=null)
+                        }).Where(m => m != null)
                         .ToDictionary<DataColumn, DataColumn>(
                             colName =>
                             {
-                                var col = new DataColumn();                    
+                                var col = new DataColumn();
                                 col.DataType = typeof(SqlGeometry);
                                 dataTable.Columns.Add(col);
                                 return col;
@@ -636,7 +653,7 @@ and T.name=@tableName
                                     var value = row[map.Value] as string;
                                     //var g = SqlGeometry.Parse(value);
                                     var g = SqlGeometry.STGeomFromText(new SqlChars(value), srid);
-                                    row[map.Key] =g;
+                                    row[map.Key] = g;
                                 }
                                 catch
                                 {
@@ -648,7 +665,7 @@ and T.name=@tableName
                         {
                             dataTable.Columns.Remove(map.Value);
                             map.Key.ColumnName = map.Value.ColumnName;
-                        }      
+                        }
 
                         dataTable.EndLoadData();
 
@@ -667,13 +684,15 @@ and T.name=@tableName
 
                 if (columnNames.Count > 0)
                 {
-                    beforeImport += dataTable => {
+                    beforeImport += dataTable =>
+                    {
 
                         dataTable.BeginLoadData();
 
                         //(x.1)构建 map  string Col -> Geometry Col
                         var colMap = columnNames
-                        .Select(colName => {
+                        .Select(colName =>
+                        {
                             var col = dataTable.Columns[colName];
                             if (col?.DataType == typeof(string))
                                 return col;
@@ -724,19 +743,19 @@ and T.name=@tableName
 
 
 
-            return Vit.Db.BulkImport.BulkImport.MsSql_Import(conn.ConnectionString,
+            return Vit.Db.BulkImport.BulkImport.MsSql_Import(connSource.ConnectionString,
                 dr, tableName,
                 onProcess: (cur, sum) =>
                 {
                     index++;
                     var process = (((float)sum) / tableRowCount * 100).ToString("f2");
-                    Log($"           {index}.[{process}%] {sum }/{tableRowCount}");
+                    Log($"           {index}.[{process}%] {sum}/{tableRowCount}");
                 }
                 , useTransaction: true, commandTimeout: commandTimeout
                 , beforeImport: beforeImport
                 );
 
-  
+
         }
 
         #endregion
@@ -748,19 +767,18 @@ and T.name=@tableName
         /// <summary>
         /// 备份数据库
         /// </summary>
-        /// <param name="bakFilePath">备份的文件路径，若不指定则自动构建。demo:@"F:\\website\appdata\dbname_2020-02-02_121212.bak"</param>
+        /// <param name="serverBakFilePath">备份的文件路径，若不指定则自动构建。demo:@"F:\\website\appdata\dbname_2020-02-02_121212.bak"</param>
         /// <returns>备份的文件路径</returns>
-        public string BackupToLocalBak(string bakFilePath = null)
+        public string BackupToServerBak(string serverBakFilePath = null)
         {
-            if (string.IsNullOrEmpty(bakFilePath)) bakFilePath = BackupFile_GetPathByName(GenerateBackupFileName(dbName));
-   
+            if (string.IsNullOrEmpty(serverBakFilePath)) serverBakFilePath = GetRelativePathInServer(GenerateBackupFileName(dbName));
 
             return Exec((conn) =>
             {
                 conn.Execute("backup database @database to disk = @filePath "
-                    , new Dictionary<string, object> { ["database"] = this.dbName, ["filePath"] = bakFilePath }
+                    , new Dictionary<string, object> { ["database"] = this.dbName, ["filePath"] = serverBakFilePath }
                     , commandTimeout: commandTimeout);
-                return bakFilePath;
+                return serverBakFilePath;
             });
         }
 
@@ -772,28 +790,22 @@ and T.name=@tableName
         /// <summary>
         /// 远程备份数据库（当数据库服务器和代码运行服务器不为同一个时，可以远程备份数据库）
         /// </summary>
-        /// <param name="bakFilePath">本地备份文件的路径，若不指定则自动构建。demo:@"F:\\website\appdata\dbname_20102020_121212.bak"</param>
+        /// <param name="localBakFilePath">本地备份文件的路径，若不指定则自动构建。demo:@"F:\\website\appdata\dbname_20100102_030405_1234567.bak"</param>
         /// <returns>本地备份文件的路径</returns>
-        public string BackupToBak(string bakFilePath = null)
+        public string BackupToLocalBak(string localBakFilePath = null)
         {
             /*
-             远程备份的步骤： 
-
+             远程备份的步骤：
                 (x.1)远程数据库服务器-获取当前数据库mdf文件所在文件夹
                 (x.2)远程数据库服务器-备份当前数据库到mdf所在文件夹中
                 (x.3)远程数据库服务器-通过sql语句读取备份文件内容，并删除备份文件
-
-                (x.4)本地服务器-读取远程的备份文件内容到本地指定文件                
-             
+                (x.4)本地服务器-读取远程的备份文件内容到本地指定文件
              */
 
             #region (x.1)拼接远程数据库服务器本地文件路径
-            var remote_mdfDirectory = Path.GetDirectoryName(GetMdfPath());
-            var remote_bakFilePath = Path.Combine(remote_mdfDirectory, "sqler_temp_" + dbName + "_" + DateTime.Now.ToString("yyyy-MM-dd_HH-mm-ss") + ".bak");
-
-            // 转换 路径中的 \为 / (为了支持linux)
-            //remote_bakFilePath = remote_bakFilePath.Replace('\\', DirectorySeparatorChar);
-
+            var serverMdfDirectory = Path_GetDirectoryName(GetMdfPath());
+            var bakFileName = GenerateBackupFileName(dbName);
+            var serverBakFilePath = Path_Combine(serverMdfDirectory, bakFileName);
             #endregion
 
 
@@ -801,7 +813,7 @@ and T.name=@tableName
             #region (x.2)远程删除文件
             try
             {
-                conn.MsSql_DeleteFile(remote_bakFilePath, Logger.Info);
+                connSource.MsSql_DeleteFile(serverBakFilePath, Logger.Info);
             }
             catch (Exception ex)
             {
@@ -810,24 +822,26 @@ and T.name=@tableName
             #endregion
 
             #region (x.3)远程数据库服务器 备份数据库
-            BackupToLocalBak(remote_bakFilePath);
+            BackupToServerBak(serverBakFilePath);
             #endregion
 
             #region (x.4)从远程数据库服务器 获取备份文件二进制内容，存储备份文件到本地，并删除临时备份文件
 
-            if (string.IsNullOrEmpty(bakFilePath)) 
-                bakFilePath = BackupFile_GetPathByName(GenerateBackupFileName(dbName));
+            if (string.IsNullOrEmpty(localBakFilePath))
+            {
+                localBakFilePath = BackupFile_GetPathByName(GenerateBackupFileName(dbName));
+            }
 
             try
             {
-                conn.ReadFileFromDisk(remote_bakFilePath, bakFilePath);
+                connSource.MsSql_ReadFileFromServer(serverBakFilePath, localBakFilePath);
             }
             finally
             {
                 //远程删除文件
                 try
-                {                  
-                    conn.MsSql_DeleteFile(remote_bakFilePath, Logger.Info);
+                {
+                    connSource.MsSql_DeleteFile(serverBakFilePath, Logger.Info);
                 }
                 catch (Exception ex)
                 {
@@ -836,7 +850,7 @@ and T.name=@tableName
             }
             #endregion
 
-            return bakFilePath;            
+            return localBakFilePath;
         }
         #endregion
 
@@ -852,7 +866,7 @@ and T.name=@tableName
         /// <returns>备份的文件路径</returns>
         public override string BackupSqler(string filePath = null, bool useMemoryCache = true)
         {
-            if (string.IsNullOrEmpty(filePath)) filePath = Path.Combine(BackupPath, GenerateBackupFileName(dbName,".sqler.zip"));
+            if (string.IsNullOrEmpty(filePath)) filePath = Path.Combine(BackupPath, GenerateBackupFileName(dbName, ".sqler.zip"));
 
             base.BackupSqler(filePath, useMemoryCache: useMemoryCache);
             return filePath;
@@ -862,37 +876,41 @@ and T.name=@tableName
 
 
         #region GenerateBackupFileName
+        /// <summary>
+        /// dbname_2010-02-02_121212_1234567.bak
+        /// </summary>
+        /// <param name="dbName"></param>
+        /// <param name="fileExtension"></param>
+        /// <returns></returns>
         static string GenerateBackupFileName(string dbName, string fileExtension = ".bak")
         {
-            // dbname_2010-02-02_121212.bak
-            return dbName + "_" + DateTime.Now.ToString("yyyy-MM-dd") + "_" + DateTime.Now.ToString("HHmmss") + fileExtension;
+            return dbName + "_" + DateTime.Now.ToString("yyyy-MM-dd_HHmmss_fffffff") + fileExtension;
         }
         #endregion
 
 
 
 
-        #region RestoreLocalBak
+        #region RestoreServerBak
         /// <summary>
-        /// 还原数据库   
+        /// 通过server bak文件还原数据库
         /// </summary>
-        /// <param name="bakFilePath">数据库备份文件的路径</param>
+        /// <param name="serverBakFilePath">数据库备份文件的路径</param>
         /// <returns>备份文件的路径</returns>
-        public string RestoreLocalBak(string bakFilePath)
+        public string RestoreServerBak(string serverBakFilePath)
         {
             //若数据库不存在，则创建数据库
             CreateDataBase();
 
             return Exec((conn) =>
             {
-
-                //获取 数据名 和 日志名          
+                //获取 数据名 和 日志名
 
                 string strDataName = null, strLogName = null;
                 //也可用 GetBakInfo 函数
                 foreach (DataRow dr in conn.ExecuteDataTable("restore filelistonly from disk=@backupFilePath;"
-                    , new Dictionary<string,object>{ ["backupFilePath"] = bakFilePath }
-                    ,commandTimeout:commandTimeout
+                    , new Dictionary<string, object> { ["backupFilePath"] = serverBakFilePath }
+                    , commandTimeout: commandTimeout
                     ).Rows)
                 {
                     if ("D" == dr["Type"].ToString().Trim())
@@ -917,10 +935,10 @@ and T.name=@tableName
 
 
                 conn.Execute(new StringBuilder("declare @DataPath nvarchar(260),@LogPath nvarchar(260); use [").Append(this.dbName).Append("]; set @DataPath= (SELECT top 1 RTRIM(o.filename) FROM dbo.sysfiles o WHERE o.groupid = (SELECT u.groupid FROM dbo.sysfilegroups u WHERE u.groupname = N'PRIMARY') and (o.status & 0x40) = 0 );  set @LogPath= (SELECT top 1 RTRIM(filename) FROM sysfiles WHERE (status & 0x40) <> 0); use [master]; ALTER DATABASE [").Append(this.dbName).Append("] SET OFFLINE WITH ROLLBACK IMMEDIATE; RESTORE DATABASE [").Append(this.dbName).Append("] FROM  DISK =@BakPath  WITH  FILE = 1,  RECOVERY ,  REPLACE ,  MOVE @LogName TO @LogPath,  MOVE @DataName TO @DataPath;").ToString()
-                    , new Dictionary<string, object> { ["DataName"] = strDataName, ["LogName"] = strLogName, ["BakPath"] = bakFilePath }
+                    , new Dictionary<string, object> { ["DataName"] = strDataName, ["LogName"] = strLogName, ["BakPath"] = serverBakFilePath }
                     , commandTimeout: commandTimeout);
 
-                return bakFilePath;
+                return serverBakFilePath;
             });
             /*
 --传递的参数
@@ -953,54 +971,54 @@ RESTORE DATABASE [Lit_Base1] FROM  DISK =@BakPath  WITH  FILE = 1,  RECOVERY ,  
 
 
 
-        #region RestoreBak 通过bak远程还原
+        #region RestoreLocalBak
         /// <summary>
-        /// 远程还原数据库   
+        /// 通过本地bak文件远程还原数据库
         /// </summary>
-        /// <param name="bakFilePath">数据库备份文件的路径</param>
+        /// <param name="localBakFilePath">数据库备份文件的路径</param>
         /// <param name="sliceMb">文件切片大小。默认：100,单位 MB。若指定小于备份文件大小的正数，则在传递文件到远程时进行分片传递。建议在备份文件过大时使用。</param>
         /// <returns>备份文件的路径</returns>
-        public void RestoreBak(string bakFilePath, int sliceMb = 100)
+        public void RestoreLocalBak(string localBakFilePath, int sliceMb = 100)
         {
             //(x.1)若数据库不存在，则创建数据库
             CreateDataBase();
 
             //(x.2)拼接在mdf同文件夹下的备份文件的路径
-            var remote_mdfDirectory = Path.GetDirectoryName(GetMdfPath());
-            var remote_bakFilePath = Path.Combine(remote_mdfDirectory, "sqler_temp_" + dbName + "_" + DateTime.Now.ToString("yyyy-MM-dd_HH-mm-ss") + ".bak");
-
-            #region    
+            var serverMdfDirectory = Path_GetDirectoryName(GetMdfPath());
+            var bakFileName = GenerateBackupFileName(dbName);
+            var serverBakFilePath = Path_Combine(serverMdfDirectory, bakFileName);
+            #region
             try
             {
                 #region (x.3)把本地备份文件传递到远程
                 var sliceByte = sliceMb * 1024 * 1024;
-                if (sliceByte <= 0 || new FileInfo(bakFilePath).Length <= sliceByte)
+                if (sliceByte <= 0 || new FileInfo(localBakFilePath).Length <= sliceByte)
                 {
                     //不分片，直接传递全部文件内容
-                    conn.MsSql_WriteFileToDisk(remote_bakFilePath, File.ReadAllBytes(bakFilePath));
+                    connSource.MsSql_WriteFileToServer(serverBakFilePath, File.ReadAllBytes(localBakFilePath));
                 }
                 else
                 {
                     //分片传递文件
-                    using (var file = new FileStream(bakFilePath, FileMode.Open, FileAccess.Read))
+                    using (var file = new FileStream(localBakFilePath, FileMode.Open, FileAccess.Read))
                     using (var bin = new BinaryReader(file))
                     {
-                        conn.MsSql_WriteFileToDisk(remote_bakFilePath, bin, sliceByte: sliceByte);
+                        connSource.MsSql_WriteFileToDisk(serverBakFilePath, bin, sliceByte: sliceByte);
                     }
                 }
                 #endregion
 
 
-                //(x.4)还原远程数据库   
-                RestoreLocalBak(remote_bakFilePath);
+                //(x.4)还原远程数据库
+                RestoreServerBak(serverBakFilePath);
 
             }
             finally
             {
                 try
                 {
-                    //远程删除文件
-                    conn.MsSql_DeleteFile(remote_bakFilePath, Logger.Info);
+                    //删除远程文件
+                    connSource.MsSql_DeleteFile(serverBakFilePath, Logger.Info);
                 }
                 catch (Exception ex)
                 {
@@ -1032,10 +1050,10 @@ RESTORE DATABASE [Lit_Base1] FROM  DISK =@BakPath  WITH  FILE = 1,  RECOVERY ,  
         {
             var fileExtension = Path.GetExtension(filePath).ToLower();
 
-            switch (fileExtension) 
+            switch (fileExtension)
             {
-                case ".zip": RestoreSqler(filePath);return;
-                case ".bak": RestoreBak(filePath, sliceMb: sliceMb); return;
+                case ".zip": RestoreSqler(filePath); return;
+                case ".bak": RestoreLocalBak(filePath, sliceMb: sliceMb); return;
             }
 
             throw new NotImplementedException($"不识别的备份文件类型。NotImplementedException from {nameof(Restore)} in {nameof(MsSqlDbMng)}.cs");
@@ -1044,11 +1062,11 @@ RESTORE DATABASE [Lit_Base1] FROM  DISK =@BakPath  WITH  FILE = 1,  RECOVERY ,  
 
 
 
-        protected override Regex RestoreSqler_SqlSplit 
+        protected override Regex RestoreSqler_SqlSplit
         {
-            get 
+            get
             {
-                //  GO ，包括空格、制表符、换页符等            
+                //  GO ，包括空格、制表符、换页符等
                 return new Regex("\\sGO\\s");
             }
         }
@@ -1068,7 +1086,7 @@ RESTORE DATABASE [Lit_Base1] FROM  DISK =@BakPath  WITH  FILE = 1,  RECOVERY ,  
             return Exec((conn) =>
             {
                 return conn.ExecuteDataTable("restore filelistonly from disk=@filePath;"
-                    , new Dictionary<string,object>{ ["filePath"] = filePath }
+                    , new Dictionary<string, object> { ["filePath"] = filePath }
                     , commandTimeout: commandTimeout);
             });
 

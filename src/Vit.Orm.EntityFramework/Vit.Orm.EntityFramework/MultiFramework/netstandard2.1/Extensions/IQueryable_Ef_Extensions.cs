@@ -125,5 +125,20 @@ namespace Vit.Extensions.Linq_Extensions
         #endregion
 
 
+        #region FirstOrDefaultAsync 
+
+        [System.Runtime.CompilerServices.MethodImpl(System.Runtime.CompilerServices.MethodImplOptions.AggressiveInlining)]
+        public static async Task<object> Ef_FirstOrDefaultAsync(this IQueryable source)
+        {
+            if (source.Provider is IAsyncQueryProvider provider)
+            {
+                return await provider.ExecuteAsync<Task<object>>(
+                    Expression.Call(typeof(Queryable), "FirstOrDefault", new Type[] { source.ElementType }, source.Expression),
+                    default(CancellationToken));
+            }
+
+            throw new InvalidOperationException("IQueryableProvider is not async");
+        }
+        #endregion
     }
 }

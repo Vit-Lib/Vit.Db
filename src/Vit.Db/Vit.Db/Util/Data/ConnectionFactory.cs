@@ -1,5 +1,5 @@
 ﻿using System;
-using System.Data.SqlClient;
+using Microsoft.Data.SqlClient;
 using System.Runtime.CompilerServices;
 
 using Vit.Core.Util.Common;
@@ -13,7 +13,7 @@ namespace Vit.Db.Util.Data
 
         #region CommandTimeout
         /// <summary>
-        /// 初始值从appsettings.json::Vit.Db.CommandTimeout获取
+        /// default value is coming from  appsettings.json::Vit.Db.CommandTimeout
         /// </summary>
         public static int? CommandTimeout = Vit.Core.Util.ConfigurationManager.Appsettings.json.GetByPath<int?>("Vit.Db.CommandTimeout");
 
@@ -23,13 +23,10 @@ namespace Vit.Db.Util.Data
 
         #region ConnectionCreator
 
-        //public static Func<System.Data.IDbConnection> DefaultCreator { get; set; } = GetConnectionCreator("App.Db");
-
-
         /// <summary>
         /// 
         /// </summary>
-        /// <param name="configPath">在appsettings.json中的路径，默认："App.Db"</param>
+        /// <param name="configPath">config path in file appsettings.json. default："App.Db"</param>
         /// <returns></returns>
         [MethodImpl(MethodImplOptions.AggressiveInlining)]
         public static Func<System.Data.IDbConnection> GetConnectionCreator(string configPath = "App.Db")
@@ -40,22 +37,20 @@ namespace Vit.Db.Util.Data
         [MethodImpl(MethodImplOptions.AggressiveInlining)]
         public static Func<System.Data.IDbConnection> GetConnectionCreator(ConnectionInfo info)
         {
-            var ConnectionString = info.ConnectionString;
+            switch (info?.type?.ToLower())
+            {
+                // SqlServer
+                case "sqlserver":
+                case "mssql":
+                    return () => MsSql_GetConnection(info.connectionString);
 
-            if (info.type == "mssql")
-            {
-                //使用SqlServer数据库
-                return () => MsSql_GetConnection(ConnectionString);
-            }
-            else if (info.type == "mysql")
-            {
-                //使用mysql数据库
-                return () => MySql_GetConnection(ConnectionString);
-            }
-            else if (info.type == "sqlite")
-            {
-                //使用sqlite数据库
-                return () => Sqlite_GetConnection(ConnectionString);
+                // MySql
+                case "mysql":
+                    return () => MySql_GetConnection(info.connectionString);
+
+                // Sqlite
+                case "sqlite":
+                    return () => Sqlite_GetConnection(info.connectionString);
             }
             return null;
         }
@@ -65,17 +60,20 @@ namespace Vit.Db.Util.Data
         [MethodImpl(MethodImplOptions.AggressiveInlining)]
         public static System.Data.IDbConnection GetConnection(ConnectionInfo info)
         {
-            switch (info?.type)
+            switch (info?.type?.ToLower())
             {
+                // SqlServer
+                case "sqlserver":
                 case "mssql":
-                    //使用SqlServer数据库
-                    return MsSql_GetConnection(info.ConnectionString);
+                    return MsSql_GetConnection(info.connectionString);
+
+                // MySql
                 case "mysql":
-                    //使用mysql数据库
-                    return MySql_GetConnection(info.ConnectionString);
+                    return MySql_GetConnection(info.connectionString);
+
+                // Sqlite
                 case "sqlite":
-                    //使用sqlite数据库
-                    return Sqlite_GetConnection(info.ConnectionString);
+                    return Sqlite_GetConnection(info.connectionString);
             }
             return null;
         }
@@ -84,7 +82,7 @@ namespace Vit.Db.Util.Data
         /// <summary>
         /// 
         /// </summary>
-        /// <param name="configPath">在appsettings.json中的路径，默认："App.Db"</param>
+        /// <param name="configPath">config path in file appsettings.json. default："App.Db"</param>
         /// <returns></returns>
         [MethodImpl(MethodImplOptions.AggressiveInlining)]
         public static System.Data.IDbConnection GetConnection(string configPath = "App.Db")
@@ -106,7 +104,7 @@ namespace Vit.Db.Util.Data
         /// <summary>
         /// 
         /// </summary>
-        /// <param name="configPath">在appsettings.json中的路径，默认："App.Db"</param>
+        /// <param name="configPath">config path in file appsettings.json. default："App.Db"</param>
         /// <returns></returns>
         [MethodImpl(MethodImplOptions.AggressiveInlining)]
         public static System.Data.IDbConnection GetOpenConnection(string configPath = "App.Db")
@@ -162,7 +160,6 @@ namespace Vit.Db.Util.Data
         [MethodImpl(MethodImplOptions.AggressiveInlining)]
         public static Microsoft.Data.Sqlite.SqliteConnection Sqlite_GetConnection(string ConnectionString)
         {
-
             return new Microsoft.Data.Sqlite.SqliteConnection(ConnectionString);
         }
 
@@ -175,7 +172,7 @@ namespace Vit.Db.Util.Data
         }
 
         /// <summary>
-        /// 若filePath为空则使用内存
+        /// use memory if filePath is null
         /// </summary>
         /// <param name="filePath"></param>
         /// <param name="CacheSize"></param>
@@ -183,6 +180,9 @@ namespace Vit.Db.Util.Data
         [MethodImpl(MethodImplOptions.AggressiveInlining)]
         public static string Sqlite_GetConnectionString(string filePath = null, int? CacheSize = null)
         {
+            // https://learn.microsoft.com/en-us/dotnet/standard/data/sqlite/compare#connection-strings
+            // "Data Source=:memory:;Version=3;Cache Size=2000;Pooling=False"
+
             if (string.IsNullOrEmpty(filePath))
             {
                 filePath = ":memory:";
@@ -192,26 +192,24 @@ namespace Vit.Db.Util.Data
                 filePath = CommonHelp.GetAbsPath(filePath);
             }
 
-            // https://docs.microsoft.com/zh-cn/dotnet/standard/data/sqlite/compare#connection-strings
-            // https://www.cnblogs.com/zeroone/archive/2012/12/16/2820719.html
-
-            //var connectionStringBuilder = new System.Data.SQLite.SQLiteConnectionStringBuilder();
-            //connectionStringBuilder.DataSource = filePath;
-            //if (Version.HasValue) connectionStringBuilder.Version = Version.Value;
-            //if (CacheSize.HasValue) connectionStringBuilder.CacheSize = CacheSize.Value;
-
             var connectionStringBuilder = new Microsoft.Data.Sqlite.SqliteConnectionStringBuilder();
             connectionStringBuilder.DataSource = filePath;
+
             //if (Version.HasValue) connectionStringBuilder.Add("Version", Version.Value);
             if (CacheSize.HasValue) connectionStringBuilder.Add("Cache Size", CacheSize.Value);
 
-            return connectionStringBuilder.ConnectionString;
 
-            // "Data Source=:memory:;Version=3;Cache Size=2000;"
+            // to avoid SQLite keeps the database locked even after the connection is closed
+            // > System.IO.IOException: 'The process cannot access the file '*' because it is being used by another process.'
+            // > https://stackoverflow.com/questions/12532729/sqlite-keeps-the-database-locked-even-after-the-connection-is-closed
+            // also work: SqliteConnection.ClearPool((SqliteConnection)connDestination);
+            connectionStringBuilder.Pooling = false;
+
+            return connectionStringBuilder.ConnectionString;
         }
 
         /// <summary>
-        /// 若filePath为空则使用内存
+        /// use memory if filePath is null
         /// </summary>
         /// <param name="filePath"></param>
         /// <param name="CacheSize"></param>
@@ -223,7 +221,7 @@ namespace Vit.Db.Util.Data
         }
 
         /// <summary>
-        /// 若filePath为空则使用内存
+        /// use memory if filePath is null
         /// </summary>
         /// <param name="filePath"></param>
         /// <param name="CacheSize"></param>

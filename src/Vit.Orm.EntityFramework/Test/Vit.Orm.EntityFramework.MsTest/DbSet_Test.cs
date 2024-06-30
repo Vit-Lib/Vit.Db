@@ -1,6 +1,8 @@
 using System.Linq;
+
 using Microsoft.EntityFrameworkCore;
 using Microsoft.VisualStudio.TestTools.UnitTesting;
+
 using Vit.Extensions.Linq_Extensions;
 using Vit.Orm.EntityFramework.MsTest.Model;
 
@@ -58,16 +60,7 @@ namespace Vit.Orm.EntityFramework.MsTest
 
 
 
-            #region (x.6)Ef_ToSql
-            {
-                var query = dbSet.Where(m => m.id == 2);
-
-                var sql = query.Ef_ToSql(); 
-            }
-            #endregion
-
-
-            #region (x.7)修改
+            #region (x.6)修改
             {
                 //手动添加的实体（AddEntityType）是不可以做修改操作的
                 //var query = dbSet.Where(m => m.id == 2);

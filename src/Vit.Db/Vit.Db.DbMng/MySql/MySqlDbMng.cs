@@ -101,12 +101,12 @@ namespace Vit.Db.DbMng
             {
                 var builder = new MySqlConnector.MySqlConnectionStringBuilder(oriConnectionString);
                 builder.Database = "";
-                conn.ConnectionString = builder.ToString();
-                return run(conn);
+                connSource.ConnectionString = builder.ToString();
+                return run(connSource);
             }
             finally
             {
-                conn.ConnectionString = oriConnectionString;
+                connSource.ConnectionString = oriConnectionString;
             }
         }
         #endregion
@@ -115,7 +115,7 @@ namespace Vit.Db.DbMng
         #region Quote
         protected override string Quote(string name)
         {
-            return conn.Quote(name);
+            return connSource.Quote(name);
         }
         #endregion
 
@@ -183,7 +183,7 @@ namespace Vit.Db.DbMng
         {
             try
             {
-                return conn.ExecuteScalar<string>("select version()");
+                return connSource.ExecuteScalar<string>("select version()");
             }
             catch
             {
@@ -232,7 +232,7 @@ namespace Vit.Db.DbMng
             // https://www.cnblogs.com/Rohn/p/11072228.html
             StringBuilder builder = new StringBuilder();
 
-            string dbName = conn.ExecuteScalar("select database()") as string;
+            string dbName = connSource.ExecuteScalar("select database()") as string;
 
             string delimiter = "/*GO*/";
 
@@ -264,7 +264,7 @@ namespace Vit.Db.DbMng
                 builder.AppendLine();
                 builder.AppendLine("-- (x.2)建表");
 
-                var names = conn.MySql_GetAllTableName();
+                var names = connSource.MySql_GetAllTableName();
                 int index = 0;
                 foreach (var name in names)
                 {
@@ -272,7 +272,7 @@ namespace Vit.Db.DbMng
 
                     #region(x.x.x.1)建表语句
                     {
-                        var dt = conn.ExecuteDataTable("SHOW CREATE table " + Quote(name));
+                        var dt = connSource.ExecuteDataTable("SHOW CREATE table " + Quote(name));
                         string sql = dt.Rows[0][1] as string;
                         builder.Append(sql).AppendLine(";");
                         builder.AppendLine(delimiter);
@@ -318,7 +318,7 @@ ORDER BY TABLE_NAME ASC, INDEX_NAME ASC;";
                         #endregion
 
 
-                        var sqlList = conn.Query<string>(indexBuilderSql, new Dictionary<string, object> { ["dbName"] = dbName, ["tableName"] = name }).ToList();
+                        var sqlList = connSource.Query<string>(indexBuilderSql, new Dictionary<string, object> { ["dbName"] = dbName, ["tableName"] = name }).ToList();
                         foreach (var sql in sqlList)
                         {
                             builder.Append(sql).AppendLine(";");
@@ -339,13 +339,13 @@ ORDER BY TABLE_NAME ASC, INDEX_NAME ASC;";
                 builder.AppendLine();
                 builder.AppendLine();
                 builder.AppendLine("-- (x.3)创建触发器");
-                var names = conn.Query<string>("show TRIGGERS;").ToList();
+                var names = connSource.Query<string>("show TRIGGERS;").ToList();
                 var index = 0;
                 foreach (var name in names)
                 {
                     builder.AppendLine("  -- (x.x." + (++index) + ")创建触发器 " + name);
 
-                    var dt = conn.ExecuteDataTable("SHOW CREATE TRIGGER " + Quote(name));
+                    var dt = connSource.ExecuteDataTable("SHOW CREATE TRIGGER " + Quote(name));
                     string sql = dt.Rows[0][2] as string;
                     builder.Append(sql).AppendLine(";");
                     builder.AppendLine(delimiter);
@@ -362,7 +362,7 @@ ORDER BY TABLE_NAME ASC, INDEX_NAME ASC;";
                 builder.AppendLine();
                 builder.AppendLine();
                 builder.AppendLine("-- (x.4)创建事件");
-                var dtEvents = conn.ExecuteDataTable("show EVENTs;");
+                var dtEvents = connSource.ExecuteDataTable("show EVENTs;");
                 var index = 0;
                 foreach (DataRow row in dtEvents.Rows)
                 {
@@ -374,7 +374,7 @@ ORDER BY TABLE_NAME ASC, INDEX_NAME ASC;";
                     //(x.x.1)创建事件
                     {
                         builder.AppendLine("  -- (x.x." + (++index) + ")创建事件 " + name);
-                        var dt = conn.ExecuteDataTable("SHOW CREATE EVENT " + Quote(name));
+                        var dt = connSource.ExecuteDataTable("SHOW CREATE EVENT " + Quote(name));
                         string sql = dt.Rows[0][3] as string;
                         builder.Append(sql).AppendLine(";");
                         builder.AppendLine(delimiter);
@@ -401,7 +401,7 @@ ORDER BY TABLE_NAME ASC, INDEX_NAME ASC;";
                 builder.AppendLine();
                 builder.AppendLine();
                 builder.AppendLine("-- (x.5)创建函数");
-                var dtName = conn.ExecuteDataTable("show FUNCTION status;");
+                var dtName = connSource.ExecuteDataTable("show FUNCTION status;");
                 var index = 0;
                 foreach (DataRow row in dtName.Rows)
                 {
@@ -411,7 +411,7 @@ ORDER BY TABLE_NAME ASC, INDEX_NAME ASC;";
 
                     builder.AppendLine("  -- (x.x." + (++index) + ")创建函数 " + name);
 
-                    var dt = conn.ExecuteDataTable("SHOW CREATE FUNCTION " + Quote(name));
+                    var dt = connSource.ExecuteDataTable("SHOW CREATE FUNCTION " + Quote(name));
                     string sql = dt.Rows[0][2] as string;
                     builder.Append(sql).AppendLine(";");
                     builder.AppendLine(delimiter);
@@ -428,7 +428,7 @@ ORDER BY TABLE_NAME ASC, INDEX_NAME ASC;";
                 builder.AppendLine();
                 builder.AppendLine("-- (x.6)创建存储过程");
 
-                var dtName = conn.ExecuteDataTable("show procedure status WHERE Db = @dbName AND `Type` = 'PROCEDURE'", new Dictionary<string, object> { ["dbName"] = dbName });
+                var dtName = connSource.ExecuteDataTable("show procedure status WHERE Db = @dbName AND `Type` = 'PROCEDURE'", new Dictionary<string, object> { ["dbName"] = dbName });
 
 
                 var index = 0;
@@ -438,7 +438,7 @@ ORDER BY TABLE_NAME ASC, INDEX_NAME ASC;";
 
                     builder.AppendLine("  -- (x.x." + (++index) + ")创建存储过程 " + name);
 
-                    var dt = conn.ExecuteDataTable("SHOW CREATE procedure " + Quote(name));
+                    var dt = connSource.ExecuteDataTable("SHOW CREATE procedure " + Quote(name));
                     string sql = dt.Rows[0][2] as string;
                     builder.Append(sql).AppendLine(";");
                     builder.AppendLine(delimiter);
@@ -455,7 +455,7 @@ ORDER BY TABLE_NAME ASC, INDEX_NAME ASC;";
                 builder.AppendLine();
                 builder.AppendLine("-- (x.7)创建视图");
                 //var dtName = conn.ExecuteDataTable("SELECT TABLE_NAME as Name from information_schema.VIEWS;");
-                var dtName = conn.ExecuteDataTable("SELECT TABLE_NAME as Name from information_schema.VIEWS where Table_Schema=@dbName", new Dictionary<string, object> { ["dbName"] = dbName });
+                var dtName = connSource.ExecuteDataTable("SELECT TABLE_NAME as Name from information_schema.VIEWS where Table_Schema=@dbName", new Dictionary<string, object> { ["dbName"] = dbName });
                 var index = 0;
                 foreach (DataRow row in dtName.Rows)
                 {
@@ -463,7 +463,7 @@ ORDER BY TABLE_NAME ASC, INDEX_NAME ASC;";
 
                     builder.AppendLine("  -- (x.x." + (++index) + ")创建存储过程 " + name);
 
-                    var dt = conn.ExecuteDataTable("SHOW CREATE view " + Quote(name));
+                    var dt = connSource.ExecuteDataTable("SHOW CREATE view " + Quote(name));
                     string sql = dt.Rows[0][1] as string;
                     builder.Append(sql).AppendLine(";");
                     builder.AppendLine(delimiter);
