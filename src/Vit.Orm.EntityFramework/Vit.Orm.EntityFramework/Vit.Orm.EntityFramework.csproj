@@ -16,8 +16,8 @@
     </PropertyGroup>
 
     <ItemGroup>
-        <PackageReference Include="Vit.Core" Version="2.1.21" />
-        <PackageReference Include="Vit.Linq" Version="2.2.22" />
+        <PackageReference Include="Vit.Core" Version="2.2.0" />
+        <PackageReference Include="Vit.Linq" Version="2.2.23" />
     </ItemGroup>
 
 

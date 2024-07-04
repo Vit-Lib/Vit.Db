@@ -1,7 +1,9 @@
 
 using Microsoft.VisualStudio.TestTools.UnitTesting;
-using Vit.Extensions.Object_Extensions;
+
 using Vit.Extensions.Linq_Extensions;
+using Vit.Extensions.Object_Extensions;
+using Vit.Linq;
 using Vit.Linq.Filter.ComponentModel;
 
 namespace Vit.Orm.EntityFramework.Dynamic.MsTest

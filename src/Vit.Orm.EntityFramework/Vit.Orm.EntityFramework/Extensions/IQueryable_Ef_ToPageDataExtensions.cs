@@ -3,6 +3,7 @@ using System.Collections.Generic;
 using System.Linq;
 using System.Threading.Tasks;
 
+using Vit.Linq;
 using Vit.Linq.ComponentModel;
 using Vit.Linq.Filter.ComponentModel;
 
@@ -42,7 +43,7 @@ namespace Vit.Extensions.Linq_Extensions
 
         #region Ef_ToPageData  with selector
         /// <summary>
-        /// 注：先查询，后调用selector
+        /// 注：先查询，后调用 selector
         /// </summary>
         /// <typeparam name="T"></typeparam>
         /// <typeparam name="TResult"></typeparam>
@@ -67,7 +68,7 @@ namespace Vit.Extensions.Linq_Extensions
         }
 
         /// <summary>
-        /// 注：先查询，后调用selector
+        /// 注：先查询，后调用 selector
         /// </summary>
         /// <typeparam name="T"></typeparam>
         /// <typeparam name="TResult"></typeparam>
