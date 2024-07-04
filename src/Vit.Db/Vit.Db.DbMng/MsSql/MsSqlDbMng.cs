@@ -10,8 +10,6 @@
 */
 #endregion
 
-using Microsoft.SqlServer.Types;
-
 using System;
 using System.Collections.Generic;
 using System.Data;
@@ -20,6 +18,8 @@ using System.IO;
 using System.Linq;
 using System.Text;
 using System.Text.RegularExpressions;
+
+using Microsoft.SqlServer.Types;
 
 using Vit.Core.Module.Log;
 using Vit.Core.Util.Common;
@@ -97,7 +97,7 @@ namespace Vit.Db.DbMng.MsSql
         public string Path_GetDirectoryName(string path)
         {
             var index = path.LastIndexOfAny(new[] { '\\', '/' });
-            return path.Substring(0, index);
+            return path[..index];
         }
 
         public string GetRelativePathInServer(params string[] path)
@@ -1000,11 +1000,9 @@ RESTORE DATABASE [Lit_Base1] FROM  DISK =@BakPath  WITH  FILE = 1,  RECOVERY ,  
                 else
                 {
                     //分片传递文件
-                    using (var file = new FileStream(localBakFilePath, FileMode.Open, FileAccess.Read))
-                    using (var bin = new BinaryReader(file))
-                    {
-                        connSource.MsSql_WriteFileToDisk(serverBakFilePath, bin, sliceByte: sliceByte);
-                    }
+                    using var file = new FileStream(localBakFilePath, FileMode.Open, FileAccess.Read);
+                    using var bin = new BinaryReader(file);
+                    connSource.MsSql_WriteFileToDisk(serverBakFilePath, bin, sliceByte: sliceByte);
                 }
                 #endregion
 

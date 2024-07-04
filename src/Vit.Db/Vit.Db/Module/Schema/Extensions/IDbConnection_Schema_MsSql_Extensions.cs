@@ -1,6 +1,7 @@
 ﻿using System.Collections.Generic;
 using System.Data;
 using System.Linq;
+
 using Vit.Db.Module.Schema;
 using Vit.Db.Module.Schema.Extensions;
 using Vit.Db.Util.Data;
@@ -22,7 +23,7 @@ namespace Vit.Extensions.Db_Extensions
             //获取所有的用户表
             //SELECT [Name] into #tb FROM sysobjects WHERE [type] = 'U'  and [Name]!='dtproperties'      
             return conn.QueryScalar<string>("SELECT [Name]  FROM sysobjects WHERE [type] = 'U'  and [Name]!='dtproperties'"
-                , commandTimeout: ConnectionFactory.CommandTimeout); 
+                , commandTimeout: ConnectionFactory.CommandTimeout);
         }
         #endregion
 
@@ -37,7 +38,7 @@ namespace Vit.Extensions.Db_Extensions
         public static List<TableSchema> MsSql_GetSchema(this IDbConnection conn, IEnumerable<string> tableNames = null)
         {
 
-            #region (x.1)获取列名 和 数据库原始字段类型          
+            #region (x.1)获取列名 和 数据库原始字段类型
             var sql = string.Format(@"
 SELECT
 tb.name AS table_name
@@ -60,7 +61,7 @@ WHERE tb.name IN ('{0}') "
 
             Dictionary<string, TableSchema> tableMap = new Dictionary<string, TableSchema>();
 
-            conn.Query<ColumnSchemaExt>(sql,commandTimeout: ConnectionFactory.CommandTimeout)?.ForEach(col=> 
+            conn.Query<ColumnSchemaExt>(sql, commandTimeout: ConnectionFactory.CommandTimeout)?.ForEach(col =>
             {
                 if (!tableMap.TryGetValue(col.table_name, out var curTableSchema))
                 {
@@ -68,12 +69,12 @@ WHERE tb.name IN ('{0}') "
                     {
                         table_name = col.table_name,
                         columns = new List<ColumnSchema>()
-                    };                 
+                    };
                     tableMap.Add(curTableSchema.table_name, curTableSchema);
                 }
                 curTableSchema.columns.Add(col);
             });
-             
+
 
             var tables = tableMap.Values.ToList();
             #endregion
@@ -87,18 +88,18 @@ WHERE tb.name IN ('{0}') "
                     var field = entity.columns.Where(f => f.column_name == column.ColumnName).FirstOrDefault();
                     if (field != null)
                     {
-                        var dataType= column.DataType;
-                        if (column.AllowDBNull && dataType.IsValueType) 
+                        var dataType = column.DataType;
+                        if (column.AllowDBNull && dataType.IsValueType)
                         {
                             dataType = typeof(System.Nullable<>).MakeGenericType(dataType);
-                        }                       
+                        }
                         field.column_clr_type = dataType;
                     }
                 }
             }
             #endregion
 
-            return tables;             
+            return tables;
         }
 
         #endregion

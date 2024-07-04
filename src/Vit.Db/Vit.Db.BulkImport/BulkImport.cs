@@ -1,5 +1,6 @@
 ﻿using System;
 using System.Data;
+
 using Vit.Db.Util.Data;
 
 namespace Vit.Db.BulkImport
@@ -28,12 +29,12 @@ namespace Vit.Db.BulkImport
         {
             switch (info.type?.ToLower())
             {
-                case "mssql": 
+                case "mssql":
                     MsSql_Import(info.connectionString
                         , dt
                         , batchRowCount: batchRowCount, onProcess: onProcess
                         , useTransaction: useTransaction, commandTimeout: commandTimeout
-                        ); 
+                        );
                     return;
                 case "mysql":
                     MySql_Import(info.connectionString
@@ -42,7 +43,7 @@ namespace Vit.Db.BulkImport
                         , useTransaction: useTransaction, commandTimeout: commandTimeout
                         );
                     return;
-                case "sqlite": 
+                case "sqlite":
                     Sqlite_Import(info.connectionString
                         , dt
                         , batchRowCount: batchRowCount, onProcess: onProcess
@@ -78,7 +79,7 @@ namespace Vit.Db.BulkImport
                         , dr, tableName
                         , maxRowCount: maxRowCount, batchRowCount: batchRowCount, onProcess: onProcess
                         , useTransaction: useTransaction, commandTimeout: commandTimeout
-                        ); 
+                        );
                     return;
                 case "mysql":
                     MySql_Import(info.connectionString

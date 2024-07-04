@@ -6,7 +6,7 @@ using System.Text.RegularExpressions;
 using Vit.Core.Module.Log;
 using Vit.Db.Util.Data;
 using Vit.Extensions.Db_Extensions;
-using Vit.Extensions.Object_Serialize_Extensions;
+using Vit.Extensions.Serialize_Extensions;
 
 namespace Vit.Db.DbMng.SqlerFile
 {
@@ -36,13 +36,10 @@ namespace Vit.Db.DbMng.SqlerFile
             if (File.Exists(filePath))
                 backupInfo = File.ReadAllText(filePath, System.Text.Encoding.UTF8)?.Deserialize<BackupInfo>();
 
-            if (backupInfo == null)
-            {
-                backupInfo = new BackupInfo
+            backupInfo ??= new BackupInfo
                 {
                     cmd = BackupInfo.defaultCmd
                 };
-            }
 
             if (!string.IsNullOrEmpty(backupInfo.sqlSplit))
             {
@@ -130,11 +127,9 @@ namespace Vit.Db.DbMng.SqlerFile
                                 int rowCount = 0;
                                 if (0 < tableRowCount)
                                 {
-                                    using (var dr = connSqlite.ExecuteReader("select * from " + connSqlite.Quote(tableName), commandTimeout: commandTimeout))
-                                    {
-                                        rowCount = BulkImport(dr, tableName, tableRowCount);
-                                        sumRowCount += rowCount;
-                                    }
+                                    using var dr = connSqlite.ExecuteReader("select * from " + connSqlite.Quote(tableName), commandTimeout: commandTimeout);
+                                    rowCount = BulkImport(dr, tableName, tableRowCount);
+                                    sumRowCount += rowCount;
                                 }
                                 Log($"     table imported. row count: " + rowCount + ",  sum: " + sumRowCount);
 

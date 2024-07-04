@@ -1,5 +1,6 @@
 ﻿using System;
 using System.Data;
+
 using Microsoft.Data.SqlClient;
 
 using Vit.Extensions;
@@ -25,7 +26,7 @@ namespace Vit.Db.BulkImport
         public static void MsSql_Import(string ConnectionString
             , DataTable dt
             , bool keepIdentity = true, SqlBulkCopyOptions? option = null
-            , int? batchRowCount = null, Action<int,int> onProcess = null
+            , int? batchRowCount = null, Action<int, int> onProcess = null
             , bool useTransaction = true, int? commandTimeout = null
             )
         {
@@ -55,16 +56,13 @@ namespace Vit.Db.BulkImport
              
              */
 
-            if (option == null)
-            {
-                option = SqlBulkCopyOptions.KeepNulls;
-            }
+            option ??= SqlBulkCopyOptions.KeepNulls;
 
             if (keepIdentity)
             {
                 option |= SqlBulkCopyOptions.KeepIdentity;
             }
-            if (useTransaction) 
+            if (useTransaction)
             {
                 option |= SqlBulkCopyOptions.UseInternalTransaction;
             }
@@ -76,38 +74,36 @@ namespace Vit.Db.BulkImport
             }
 
 
-            using (SqlBulkCopy sqlBC = new SqlBulkCopy(ConnectionString, option.Value))
+            using SqlBulkCopy sqlBC = new SqlBulkCopy(ConnectionString, option.Value);
+
+            if (onProcess != null)
             {
-              
-                if (onProcess != null)
+                sqlBC.NotifyAfter = batchRowCount_;
+                int importedRowCount = 0;
+                sqlBC.SqlRowsCopied += (object sender, SqlRowsCopiedEventArgs e) =>
                 {
-                    sqlBC.NotifyAfter = batchRowCount_;
-                    int importedRowCount = 0;
-                    sqlBC.SqlRowsCopied += (object sender, SqlRowsCopiedEventArgs e) =>
-                    {
-                        int rowCount = (int)e.RowsCopied;
-                        importedRowCount += rowCount;
-                        onProcess(rowCount,importedRowCount);
-                    };
-                }
-
-
-                //设置永不超时
-                sqlBC.BulkCopyTimeout = commandTimeout ??  0;
-
-                sqlBC.BatchSize = batchRowCount_;
-
-
-                sqlBC.DestinationTableName = dt.TableName;
-
-                //若不加则默认按字段顺序导入，而字段顺序不一定一致，故需要手动添加列映射
-                foreach (DataColumn column in dt.Columns)
-                {
-                    sqlBC.ColumnMappings.Add(column.ColumnName, column.ColumnName);
-                }
-                sqlBC.WriteToServer(dt);
-                sqlBC.ColumnMappings.Clear();
+                    int rowCount = (int)e.RowsCopied;
+                    importedRowCount += rowCount;
+                    onProcess(rowCount, importedRowCount);
+                };
             }
+
+
+            //设置永不超时
+            sqlBC.BulkCopyTimeout = commandTimeout ?? 0;
+
+            sqlBC.BatchSize = batchRowCount_;
+
+
+            sqlBC.DestinationTableName = dt.TableName;
+
+            //若不加则默认按字段顺序导入，而字段顺序不一定一致，故需要手动添加列映射
+            foreach (DataColumn column in dt.Columns)
+            {
+                sqlBC.ColumnMappings.Add(column.ColumnName, column.ColumnName);
+            }
+            sqlBC.WriteToServer(dt);
+            sqlBC.ColumnMappings.Clear();
         }
 
         #endregion
@@ -150,14 +146,14 @@ namespace Vit.Db.BulkImport
                 int stopIndex = Math.Min(importedRowCount + batchRowCount_, maxRowCount);
 
                 var dt = dr.ReadDataTable(stopIndex - importedRowCount);
-                if (dt == null || dt.Rows.Count==0) break;
+                if (dt == null || dt.Rows.Count == 0) break;
 
                 dt.TableName = tableName;
 
                 beforeImport?.Invoke(dt);
 
                 MsSql_Import(ConnectionString, dt, keepIdentity: keepIdentity, option: option
-                    , batchRowCount:0            
+                    , batchRowCount: 0
                     , useTransaction: useTransaction, commandTimeout: commandTimeout);
 
                 int rowCount = dt.Rows.Count;

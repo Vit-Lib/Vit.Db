@@ -1,6 +1,7 @@
 ﻿using System;
 using System.Data;
 using System.Runtime.CompilerServices;
+
 using Vit.Db.Util.Data;
 
 namespace Vit.Extensions.Db_Extensions
@@ -14,19 +15,13 @@ namespace Vit.Extensions.Db_Extensions
         [MethodImpl(MethodImplOptions.AggressiveInlining)]
         public static string Quote(this IDbConnection conn, string name)
         {
-            switch (conn.GetDbType())
+            return conn.GetDbType() switch
             {
-                case EDbType.Sqlite:
-                    return conn.Sqlite_Quote(name);
-
-                case EDbType.MySql:
-                    return conn.MySql_Quote(name);
-
-                case EDbType.SqlServer:
-                    return conn.MsSql_Quote(name);
-            }
-
-            throw new NotImplementedException($"NotImplementedException from {nameof(Quote)} in {nameof(IDbConnection_Quote_Extensions)}.cs");
+                EDbType.Sqlite => conn.Sqlite_Quote(name),
+                EDbType.MySql => conn.MySql_Quote(name),
+                EDbType.SqlServer => conn.MsSql_Quote(name),
+                _ => throw new NotImplementedException($"NotImplementedException from {nameof(Quote)} in {nameof(IDbConnection_Quote_Extensions)}.cs"),
+            };
         }
         #endregion
 
@@ -58,7 +53,7 @@ namespace Vit.Extensions.Db_Extensions
         [MethodImpl(MethodImplOptions.AggressiveInlining)]
         public static string Quote(this MySqlConnector.MySqlConnection conn, string name)
         {
-            return MySql_Quote(conn,name);
+            return MySql_Quote(conn, name);
         }
 
         #endregion

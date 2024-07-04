@@ -35,8 +35,8 @@ namespace Vit.Db.Util.Sqlite
     public class SQLiteBackup : IDisposable
     {
 
-        SqliteConnection sourceConn = null;
-        string destinationConnectionString = null;
+        readonly SqliteConnection sourceConn = null;
+        readonly string destinationConnectionString = null;
         public SQLiteBackup(SqliteConnection sourceConn, string destinationConnectionString = null, string destinationFilePath = null)
         {
             this.sourceConn = sourceConn;
@@ -53,10 +53,8 @@ namespace Vit.Db.Util.Sqlite
             if (sourceConn == null || destinationConnectionString == null)
                 return;
 
-            using (var connDestination = ConnectionFactory.Sqlite_GetOpenConnection(destinationConnectionString))
-            {
-                sourceConn.BackupDatabase(connDestination);
-            }
+            using var connDestination = ConnectionFactory.Sqlite_GetOpenConnection(destinationConnectionString);
+            sourceConn.BackupDatabase(connDestination);
         }
     }
 }

@@ -1,6 +1,7 @@
 ﻿using System;
-using Microsoft.Data.SqlClient;
 using System.Runtime.CompilerServices;
+
+using Microsoft.Data.SqlClient;
 
 using Vit.Core.Util.Common;
 using Vit.Core.Util.ConfigurationManager;

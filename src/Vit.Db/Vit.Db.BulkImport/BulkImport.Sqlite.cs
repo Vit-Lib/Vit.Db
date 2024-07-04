@@ -1,5 +1,6 @@
 ﻿using System;
 using System.Data;
+
 using Vit.Db.Util.Data;
 using Vit.Extensions.Db_Extensions;
 
@@ -18,15 +19,13 @@ namespace Vit.Db.BulkImport
         /// <param name="useTransaction">是否使用事务</param>
         /// <param name="commandTimeout">sets the wait time before terminating the attempt to execute a command and generating an error.</param>
         public static void Sqlite_Import(string ConnectionString, DataTable dt
-            , int? batchRowCount = null, Action<int,int> onProcess = null
+            , int? batchRowCount = null, Action<int, int> onProcess = null
             , bool useTransaction = true, int? commandTimeout = null)
         {
-            using (var conn = ConnectionFactory.Sqlite_GetConnection(ConnectionString))
-            {
-                conn.Import(dt
-                    , batchRowCount: batchRowCount, onProcess: onProcess
-                    , useTransaction: useTransaction, commandTimeout: commandTimeout);
-            }
+            using var conn = ConnectionFactory.Sqlite_GetConnection(ConnectionString);
+            conn.Import(dt
+                , batchRowCount: batchRowCount, onProcess: onProcess
+                , useTransaction: useTransaction, commandTimeout: commandTimeout);
         }
         #endregion
 
@@ -45,15 +44,13 @@ namespace Vit.Db.BulkImport
         /// <param name="commandTimeout">sets the wait time before terminating the attempt to execute a command and generating an error.</param>
         public static int Sqlite_Import(string ConnectionString
             , IDataReader dr, string tableName
-            , int maxRowCount = int.MaxValue, int? batchRowCount = null, Action<int,int> onProcess = null
+            , int maxRowCount = int.MaxValue, int? batchRowCount = null, Action<int, int> onProcess = null
             , bool useTransaction = true, int? commandTimeout = null)
         {
-            using (var conn = ConnectionFactory.Sqlite_GetConnection(ConnectionString))
-            {
-                return conn.Import(dr, tableName
-                    , maxRowCount: maxRowCount, batchRowCount: batchRowCount, onProcess: onProcess
-                    , useTransaction: useTransaction, commandTimeout: commandTimeout);
-            }
+            using var conn = ConnectionFactory.Sqlite_GetConnection(ConnectionString);
+            return conn.Import(dr, tableName
+                , maxRowCount: maxRowCount, batchRowCount: batchRowCount, onProcess: onProcess
+                , useTransaction: useTransaction, commandTimeout: commandTimeout);
         }
         #endregion
 

@@ -1,5 +1,6 @@
 ﻿using System.Data;
 using System.Runtime.CompilerServices;
+
 using Vit.Db.Util.Data;
 
 namespace Vit.Extensions.Db_Extensions
@@ -48,7 +49,7 @@ namespace Vit.Extensions.Db_Extensions
         /// <param name="obj"></param>
         /// <returns></returns>
         [MethodImpl(MethodImplOptions.AggressiveInlining)]
-        public static EDbType? GetDbTypeFromTypeName(object obj) 
+        public static EDbType? GetDbTypeFromTypeName(object obj)
         {
             var typeFullName = obj?.GetType().FullName.ToLower();
 
@@ -64,7 +65,7 @@ namespace Vit.Extensions.Db_Extensions
                 return EDbType.MySql;
             }
 
-            if (typeFullName.Contains("mssql")|| typeFullName.Contains("sqlserver") || typeFullName.Contains(".sqlconnection") || typeFullName.Contains(".sqlclient."))
+            if (typeFullName.Contains("mssql") || typeFullName.Contains("sqlserver") || typeFullName.Contains(".sqlconnection") || typeFullName.Contains(".sqlclient."))
             {
                 return EDbType.SqlServer;
             }

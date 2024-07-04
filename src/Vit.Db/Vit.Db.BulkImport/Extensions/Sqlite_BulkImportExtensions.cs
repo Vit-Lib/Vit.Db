@@ -1,10 +1,12 @@
 ﻿using System;
 using System.Data;
 using System.Text;
+
 using Microsoft.Data.Sqlite;
-using SqlConnection = Microsoft.Data.Sqlite.SqliteConnection;
-using SqlCommand = Microsoft.Data.Sqlite.SqliteCommand; 
+
 using Vit.Db.BulkImport;
+
+using SqlConnection = Microsoft.Data.Sqlite.SqliteConnection;
 
 namespace Vit.Extensions.Db_Extensions
 {
@@ -22,98 +24,94 @@ namespace Vit.Extensions.Db_Extensions
         /// <param name="useTransaction">是否使用事务</param>
         /// <param name="commandTimeout">sets the wait time before terminating the attempt to execute a command and generating an error.</param>
         public static void Import(this SqlConnection conn, DataTable dt
-            , int? batchRowCount = null, Action<int,int> onProcess = null
+            , int? batchRowCount = null, Action<int, int> onProcess = null
             , bool useTransaction = true, int? commandTimeout = null)
         {
-            if (null == dt || dt.Columns.Count == 0 || dt.Rows.Count == 0) return; 
+            if (null == dt || dt.Columns.Count == 0 || dt.Rows.Count == 0) return;
 
 
-            #region importAction           
-            Action importAction = () =>
+            #region importAction
+            void importAction()
             {
-                using (var cmd = conn.CreateCommand())
+                using var cmd = conn.CreateCommand();
+                cmd.Connection = conn;
+                var param = cmd.Parameters;
+                cmd.CommandText = Import_GetSqlInsert(dt, param);
+
+                cmd.CommandTimeout = commandTimeout ?? 0;
+
+                int importedRowCount = 0;
+
+                if (useTransaction)
                 {
-                    cmd.Connection = conn;
-                    var param = cmd.Parameters;
-                    cmd.CommandText = Import_GetSqlInsert(dt, param);
 
-                    cmd.CommandTimeout = commandTimeout ?? 0;
-
-                    int importedRowCount = 0;
-
-                    if (useTransaction)
+                    #region (x.1)构建一次事务的逻辑             
+                    var batchRowCount_ = batchRowCount ?? BulkImport.batchRowCount;
+                    if (batchRowCount_ <= 0)
                     {
+                        batchRowCount_ = dt.Rows.Count;
+                    }
 
-                        #region (x.1)构建一次事务的逻辑             
-                        var batchRowCount_ = batchRowCount ?? BulkImport.batchRowCount;
-                        if (batchRowCount_ <= 0)
-                        {
-                            batchRowCount_ = dt.Rows.Count;
-                        }
-
-                        Func<int> action = () =>
-                        {
-                            int stopIndex = Math.Min(importedRowCount + batchRowCount_, dt.Rows.Count);
-                            int rowCount = 0;
-                            do
-                            {
-                                DataRow row = dt.Rows[importedRowCount];
-
-                                for (int t = 0; t < param.Count; t++)
-                                {
-                                    param[t].Value = row[t] ?? DBNull.Value;
-                                }
-                                cmd.ExecuteNonQuery();
-
-                                rowCount++;
-                                importedRowCount++;
-
-                            } while (importedRowCount < stopIndex);
-                            return rowCount;
-
-                        };
-                        #endregion
-
-
-                        #region (x.2)分批次导入数据
+                    int action()
+                    {
+                        int stopIndex = Math.Min(importedRowCount + batchRowCount_, dt.Rows.Count);
+                        int rowCount = 0;
                         do
                         {
-                            using (var trans = conn.BeginTransaction())
-                            {
-                                cmd.Transaction = trans;
-                                try
-                                {
-                                    int rowCount = action();
-                                    trans.Commit();
-                                    onProcess?.Invoke(rowCount, importedRowCount);
-                                }
-                                catch
-                                {
-                                    trans.Rollback();
-                                    throw;
-                                }
-                            }
+                            DataRow row = dt.Rows[importedRowCount];
 
-                        } while (importedRowCount < dt.Rows.Count);
-                        #endregion
-                       
-                    }
-                    else
-                    {
-                        foreach (DataRow row in dt.Rows)
-                        {
                             for (int t = 0; t < param.Count; t++)
                             {
                                 param[t].Value = row[t] ?? DBNull.Value;
                             }
                             cmd.ExecuteNonQuery();
+
+                            rowCount++;
                             importedRowCount++;
-                        }
-                        onProcess?.Invoke(importedRowCount,importedRowCount);
+
+                        } while (importedRowCount < stopIndex);
+                        return rowCount;
+
                     }
+                    #endregion
+
+
+                    #region (x.2)分批次导入数据
+                    do
+                    {
+                        using var trans = conn.BeginTransaction();
+                        cmd.Transaction = trans;
+                        try
+                        {
+                            int rowCount = action();
+                            trans.Commit();
+                            onProcess?.Invoke(rowCount, importedRowCount);
+                        }
+                        catch
+                        {
+                            trans.Rollback();
+                            throw;
+                        }
+
+                    } while (importedRowCount < dt.Rows.Count);
+                    #endregion
+
+                }
+                else
+                {
+                    foreach (DataRow row in dt.Rows)
+                    {
+                        for (int t = 0; t < param.Count; t++)
+                        {
+                            param[t].Value = row[t] ?? DBNull.Value;
+                        }
+                        cmd.ExecuteNonQuery();
+                        importedRowCount++;
+                    }
+                    onProcess?.Invoke(importedRowCount, importedRowCount);
                 }
 
-            };
+            }
             #endregion
 
 
@@ -147,7 +145,7 @@ namespace Vit.Extensions.Db_Extensions
 
 
             for (int i = 0; i < dt.Columns.Count; i++)
-            { 
+            {
                 var paramName = "p" + i;
                 sql.Append("@" + paramName + ",");
                 param.AddWithValue(paramName, null);
@@ -181,7 +179,7 @@ namespace Vit.Extensions.Db_Extensions
         /// <param name="useTransaction">是否使用事务</param>
         /// <param name="commandTimeout">sets the wait time before terminating the attempt to execute a command and generating an error.</param>
         public static int Import(this SqlConnection conn, IDataReader dr, string tableName
-            , int maxRowCount = int.MaxValue, int? batchRowCount = null, Action<int,int> onProcess = null
+            , int maxRowCount = int.MaxValue, int? batchRowCount = null, Action<int, int> onProcess = null
             , bool useTransaction = true, int? commandTimeout = null)
         {
             int importedRowCount = 0;
@@ -208,7 +206,7 @@ namespace Vit.Extensions.Db_Extensions
                         batchRowCount_ = maxRowCount;
                     }
 
-                    Func<int> action = () => 
+                    int action()
                     {
                         int rowCount = 0;
                         int stopIndex = Math.Min(importedRowCount + batchRowCount_, maxRowCount);
@@ -237,27 +235,25 @@ namespace Vit.Extensions.Db_Extensions
 
                         return rowCount;
 
-                    };
+                    }
                     #endregion
 
 
                     #region (x.2)
                     do
                     {
-                        using (var trans = conn.BeginTransaction())
+                        using var trans = conn.BeginTransaction();
+                        cmd.Transaction = trans;
+                        try
                         {
-                            cmd.Transaction = trans;
-                            try
-                            {
-                                int rowCount = action();
-                                trans.Commit();
-                                onProcess?.Invoke(rowCount, importedRowCount);
-                            }
-                            catch
-                            {
-                                trans.Rollback();
-                                throw;
-                            }
+                            int rowCount = action();
+                            trans.Commit();
+                            onProcess?.Invoke(rowCount, importedRowCount);
+                        }
+                        catch
+                        {
+                            trans.Rollback();
+                            throw;
                         }
 
                     } while (importedRowCount < maxRowCount && dr.Read());
@@ -284,9 +280,9 @@ namespace Vit.Extensions.Db_Extensions
                         }
                         cmd.ExecuteNonQuery();
                         importedRowCount++;
-                    } while (importedRowCount < maxRowCount &&  dr.Read());
+                    } while (importedRowCount < maxRowCount && dr.Read());
 
-                    onProcess?.Invoke(importedRowCount,importedRowCount);
+                    onProcess?.Invoke(importedRowCount, importedRowCount);
                 }
             }
             return importedRowCount;
@@ -312,7 +308,7 @@ namespace Vit.Extensions.Db_Extensions
                 //sql.Append("?,");     
                 //param.AddWithValue("param" + i, null);
                 var paramName = "p" + i;
-                sql.Append("@"+paramName+",");
+                sql.Append("@" + paramName + ",");
                 param.AddWithValue(paramName, null);
             }
             sql.Length--;

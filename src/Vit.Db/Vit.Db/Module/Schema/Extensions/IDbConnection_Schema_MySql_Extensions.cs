@@ -1,6 +1,7 @@
 ﻿using System.Collections.Generic;
 using System.Data;
 using System.Linq;
+
 using Vit.Db.Module.Schema;
 using Vit.Db.Module.Schema.Extensions;
 using Vit.Db.Util.Data;
@@ -9,7 +10,7 @@ namespace Vit.Extensions.Db_Extensions
 {
     public static partial class IDbConnection_Schema_MySql_Extensions
     {
-     
+
 
 
         #region GetAllTableName
@@ -33,7 +34,7 @@ namespace Vit.Extensions.Db_Extensions
         /// <param name="conn"></param>
         /// <param name="tableNames">若不指定则返回所有表的字段信息</param>
         /// <returns></returns>
-        public static List<TableSchema> MySql_GetSchema(this IDbConnection conn, IEnumerable<string> tableNames=null)
+        public static List<TableSchema> MySql_GetSchema(this IDbConnection conn, IEnumerable<string> tableNames = null)
         {
             #region (x.1)获取列名 和 数据库原始字段类型          
             var sql = string.Format(@"
@@ -46,7 +47,7 @@ SELECT
 	,if(EXTRA='auto_increment',1,0) as autoincrement
     FROM information_schema.COLUMNS
 WHERE TABLE_NAME IN ('{0}')  and TABLE_SCHEMA='{1}'"
-                    , string.Join("','", tableNames ?? conn.MySql_GetAllTableName()),conn.MySql_GetDbName()
+                    , string.Join("','", tableNames ?? conn.MySql_GetAllTableName()), conn.MySql_GetDbName()
                     );
 
             Dictionary<string, TableSchema> tableMap = new Dictionary<string, TableSchema>();
@@ -67,9 +68,9 @@ WHERE TABLE_NAME IN ('{0}')  and TABLE_SCHEMA='{1}'"
                     curTableSchema.columns.Add(field);
                 }
             );
-           
 
-            var tables= tableMap.Values.ToList();
+
+            var tables = tableMap.Values.ToList();
             #endregion
 
             #region (x.2)获取字段Clr类型
@@ -86,7 +87,7 @@ WHERE TABLE_NAME IN ('{0}')  and TABLE_SCHEMA='{1}'"
                         {
                             dataType = typeof(System.Nullable<>).MakeGenericType(dataType);
                         }
-                        field.column_clr_type = dataType;                      
+                        field.column_clr_type = dataType;
                     }
                 }
             }
@@ -157,7 +158,7 @@ WHERE TABLE_NAME IN ('{0}')  and TABLE_SCHEMA='{1}'"
         #endregion
 
         #endregion
-       
+
 
 
     }

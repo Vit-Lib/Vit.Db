@@ -1,11 +1,12 @@
 ﻿using System;
 using System.Data;
-using Microsoft.Data.SqlClient;
 using System.Text;
 
-using SqlConnection = Microsoft.Data.SqlClient.SqlConnection;
+using Microsoft.Data.SqlClient;
 
 using Vit.Db.BulkImport;
+
+using SqlConnection = Microsoft.Data.SqlClient.SqlConnection;
 
 namespace Vit.Extensions.Db_Extensions
 {
@@ -93,90 +94,85 @@ namespace Vit.Extensions.Db_Extensions
         {
             if (null == dt || dt.Columns.Count == 0 || dt.Rows.Count == 0) return;
 
-            #region importAction           
-            Action importAction = () =>
+            #region importAction
+            void importAction()
             {
-
                 StringBuilder sql = new StringBuilder("insert into ").Append(conn.MsSql_Quote(dt.TableName)).Append("(");
 
-                using (var cmd = conn.CreateCommand())
+                using var cmd = conn.CreateCommand();
+
+                foreach (DataColumn dc in dt.Columns)
                 {
+                    string columnName = dc.ColumnName;
 
-                    foreach (DataColumn dc in dt.Columns)
+                    sql.Append(columnName).Append(",");
+                }
+                sql.Length--;
+                sql.Append(") values(");
+
+                var param = cmd.Parameters;
+
+
+                //var item = dt.Rows[0];
+                //foreach (DataColumn dc in dt.Columns)
+                //{
+                //    string columnName = dc.ColumnName;
+                //    sql.Append("@").Append(columnName).Append(",");
+                //    //sql.Append("?,");
+                //    param.AddWithValue(columnName, item[dc]);
+                //}
+                for (int i = 0; i < dt.Columns.Count; i++)
+                {
+                    var paramName = "p" + i;
+                    sql.Append("@" + paramName + ",");
+                    param.AddWithValue(paramName, null);
+                }
+
+
+
+                sql.Length--;
+                sql.Append(")");
+
+                cmd.Connection = conn;
+                cmd.CommandText = sql.ToString();
+
+
+                cmd.CommandTimeout = commandTimeout ?? 0;
+
+                if (useTransaction)
+                {
+                    using var tran = conn.BeginTransaction();
+                    try
                     {
-                        string columnName = dc.ColumnName;
-
-                        sql.Append(columnName).Append(",");
-                    }
-                    sql.Length--;
-                    sql.Append(") values(");
-
-                    var param = cmd.Parameters;
-
-
-                    //var item = dt.Rows[0];
-                    //foreach (DataColumn dc in dt.Columns)
-                    //{
-                    //    string columnName = dc.ColumnName;
-                    //    sql.Append("@").Append(columnName).Append(",");
-                    //    //sql.Append("?,");
-                    //    param.AddWithValue(columnName, item[dc]);
-                    //}
-                    for (int i = 0; i < dt.Columns.Count; i++)
-                    {
-                        var paramName = "p" + i;
-                        sql.Append("@" + paramName + ",");
-                        param.AddWithValue(paramName, null);
-                    }
-
-
-
-                    sql.Length--;
-                    sql.Append(")");
-
-                    cmd.Connection = conn;
-                    cmd.CommandText = sql.ToString();
-
-
-                    cmd.CommandTimeout = commandTimeout ?? 0;
-
-                    if (useTransaction)
-                    {
-                        using (var tran = conn.BeginTransaction())
-                        {
-                            try
-                            {
-                                cmd.Transaction = tran;
-                                foreach (DataRow row in dt.Rows)
-                                {
-                                    for (int t = 0; t < param.Count; t++)
-                                    {
-                                        param[t].Value = row[t] ?? DBNull.Value;
-                                    }
-                                    cmd.ExecuteNonQuery();
-                                }
-                                tran.Commit();
-                            }
-                            catch (Exception)
-                            {
-                                tran.Rollback();
-                                throw;
-                            }
-                        }
-                    }
-                    else
-                    {
+                        cmd.Transaction = tran;
                         foreach (DataRow row in dt.Rows)
                         {
                             for (int t = 0; t < param.Count; t++)
                             {
-                                param[t].Value = row[t];
+                                param[t].Value = row[t] ?? DBNull.Value;
                             }
                             cmd.ExecuteNonQuery();
                         }
+                        tran.Commit();
+                    }
+                    catch (Exception)
+                    {
+                        tran.Rollback();
+                        throw;
                     }
                 }
-            };
+                else
+                {
+                    foreach (DataRow row in dt.Rows)
+                    {
+                        for (int t = 0; t < param.Count; t++)
+                        {
+                            param[t].Value = row[t];
+                        }
+                        cmd.ExecuteNonQuery();
+                    }
+                }
+            }
             #endregion
 
 

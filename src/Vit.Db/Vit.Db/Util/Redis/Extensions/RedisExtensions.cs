@@ -1,10 +1,10 @@
-﻿using StackExchange.Redis;
-using System;
+﻿using System;
 using System.Collections.Generic;
 using System.Runtime.CompilerServices;
 
-using Vit.Extensions.Json_Extensions;
-using Vit.Extensions.Object_Serialize_Extensions;
+using StackExchange.Redis;
+
+using Vit.Extensions.Serialize_Extensions;
 
 namespace Vit.Extensions.Redis_Extensions
 {
@@ -27,8 +27,8 @@ namespace Vit.Extensions.Redis_Extensions
     public static partial class RedisExtensions
     {
 
-       
-      
+
+
         [MethodImpl(MethodImplOptions.AggressiveInlining)]
         public static string Redis_BuildKey(this IEnumerable<string> keys)
         {
@@ -43,9 +43,9 @@ namespace Vit.Extensions.Redis_Extensions
 
 
         [MethodImpl(MethodImplOptions.AggressiveInlining)]
-        public static bool Set(this IDatabase db,object value, TimeSpan? expiry, params string[] keys)
+        public static bool Set(this IDatabase db, object value, TimeSpan? expiry, params string[] keys)
         {
-            return db.StringSet(keys.Redis_BuildKey(),value.Serialize(), expiry);
+            return db.StringSet(keys.Redis_BuildKey(), value.Serialize(), expiry);
         }
 
 

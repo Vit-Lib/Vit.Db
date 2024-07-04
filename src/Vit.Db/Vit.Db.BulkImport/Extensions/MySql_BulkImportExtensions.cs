@@ -2,17 +2,17 @@
 using System;
 using System.Collections.Generic;
 using System.Data;
+using System.IO;
+using System.Linq;
 using System.Text;
 
-using SqlConnection = MySqlConnector.MySqlConnection;
-
-using System.Linq;
-using System.IO;
-using Vit.Db.BulkImport;
-using Vit.Core.Util.MethodExt;
-
-using Vit.Extensions.Data;
 using MySqlConnector;
+
+using Vit.Core.Util.MethodExt;
+using Vit.Db.BulkImport;
+using Vit.Extensions.Data;
+
+using SqlConnection = MySqlConnector.MySqlConnection;
 
 namespace Vit.Extensions.Db_Extensions
 {
@@ -358,123 +358,119 @@ namespace Vit.Extensions.Db_Extensions
         {
             if (null == dt || dt.Columns.Count == 0 || dt.Rows.Count == 0) return;
 
-            #region importAction           
-            Action importAction = () =>
+            #region importAction
+            void importAction()
             {
-                using (var cmd = conn.CreateCommand())
+                using var cmd = conn.CreateCommand();
+
+                var param = cmd.Parameters;
+
+                #region (x.1)创建表结构的SQL语句
+                // CREATE TABEL IF NOT EXISTS ，一般情况下用这句比较好，如果原来就有同名的表，没有这句就会出错
+                StringBuilder sql = new StringBuilder("insert into ").Append(conn.MySql_Quote(dt.TableName)).Append(" (");
+                foreach (DataColumn dc in dt.Columns)
                 {
+                    string columnName = dc.ColumnName;
 
-                    var param = cmd.Parameters;
-
-                    #region (x.1)创建表结构的SQL语句
-                    // CREATE TABEL IF NOT EXISTS ，一般情况下用这句比较好，如果原来就有同名的表，没有这句就会出错
-                    StringBuilder sql = new StringBuilder("insert into ").Append(conn.MySql_Quote(dt.TableName)).Append(" (");
-                    foreach (DataColumn dc in dt.Columns)
-                    {
-                        string columnName = dc.ColumnName;
-
-                        sql.Append(conn.Quote(columnName)).Append(",");
-                    }
-                    sql.Length--;
-                    sql.Append(") values(");
+                    sql.Append(conn.Quote(columnName)).Append(",");
+                }
+                sql.Length--;
+                sql.Append(") values(");
 
 
-                    //var item = dt.Rows[0];
-                    //foreach (DataColumn dc in dt.Columns)
-                    //{
-                    //    string columnName = dc.ColumnName;
-                    //    sql.Append("@").Append(columnName).Append(",");
-                    //    param.AddWithValue(columnName, item[dc]);
-                    //}
+                //var item = dt.Rows[0];
+                //foreach (DataColumn dc in dt.Columns)
+                //{
+                //    string columnName = dc.ColumnName;
+                //    sql.Append("@").Append(columnName).Append(",");
+                //    param.AddWithValue(columnName, item[dc]);
+                //}
 
-                    for (int i = 0; i < dt.Columns.Count; i++)
-                    {
-                        var paramName = "p" + i;
-                        sql.Append("@" + paramName + ",");
-                        param.AddWithValue(paramName, null);
-                    }
-
-
-
-                    sql.Length--;
-                    sql.Append(")");
-                    #endregion
-
-                    cmd.Connection = conn;
-                    cmd.CommandText = sql.ToString();
-
-                    cmd.CommandTimeout = commandTimeout ?? 0;
-
-
-                    #region (x.3)批量导入数据                   
-                    if (useTransaction)
-                    {
-
-                        int rowCount = 0;
-
-                        #region (x.1)构建一次事务的逻辑             
-
-                        Action action = () =>
-                        {
-                            int stopIndex = Math.Min(rowCount + BulkImport.batchRowCount, dt.Rows.Count);
-                            do
-                            {
-                                DataRow row = dt.Rows[rowCount];
-
-                                for (int t = 0; t < param.Count; t++)
-                                {
-                                    param[t].Value = row[t] ?? DBNull.Value;
-                                }
-                                cmd.ExecuteNonQuery();
-
-                                rowCount++;
-
-                            } while (rowCount < stopIndex);
-
-                        };
-                        #endregion
-
-
-                        #region (x.2)
-                        do
-                        {
-                            using (var trans = conn.BeginTransaction())
-                            {
-                                try
-                                {
-                                    cmd.Transaction = trans;
-                                    action();
-                                    trans.Commit();
-                                }
-                                catch
-                                {
-                                    trans.Rollback();
-                                    throw;
-                                }
-                            }
-
-                        } while (rowCount < dt.Rows.Count);
-                        #endregion
-
-                    }
-                    else
-                    {
-                        if (tran != null)
-                            cmd.Transaction = tran;
-
-                        foreach (DataRow row in dt.Rows)
-                        {
-                            for (int t = 0; t < param.Count; t++)
-                            {
-                                param[t].Value = row[t];
-                            }
-                            cmd.ExecuteNonQuery();
-                        }
-                    }
-                    #endregion
+                for (int i = 0; i < dt.Columns.Count; i++)
+                {
+                    var paramName = "p" + i;
+                    sql.Append("@" + paramName + ",");
+                    param.AddWithValue(paramName, null);
                 }
 
-            };
+
+
+                sql.Length--;
+                sql.Append(")");
+                #endregion
+
+                cmd.Connection = conn;
+                cmd.CommandText = sql.ToString();
+
+                cmd.CommandTimeout = commandTimeout ?? 0;
+
+
+                #region (x.3)批量导入数据
+                if (useTransaction)
+                {
+
+                    int rowCount = 0;
+
+                    #region (x.1)构建一次事务的逻辑
+
+                    void action()
+                    {
+                        int stopIndex = Math.Min(rowCount + BulkImport.batchRowCount, dt.Rows.Count);
+                        do
+                        {
+                            DataRow row = dt.Rows[rowCount];
+
+                            for (int t = 0; t < param.Count; t++)
+                            {
+                                param[t].Value = row[t] ?? DBNull.Value;
+                            }
+                            cmd.ExecuteNonQuery();
+
+                            rowCount++;
+
+                        } while (rowCount < stopIndex);
+
+                    }
+                    #endregion
+
+
+                    #region (x.2)
+                    do
+                    {
+                        using var trans = conn.BeginTransaction();
+                        try
+                        {
+                            cmd.Transaction = trans;
+                            action();
+                            trans.Commit();
+                        }
+                        catch
+                        {
+                            trans.Rollback();
+                            throw;
+                        }
+
+                    } while (rowCount < dt.Rows.Count);
+                    #endregion
+
+                }
+                else
+                {
+                    if (tran != null)
+                        cmd.Transaction = tran;
+
+                    foreach (DataRow row in dt.Rows)
+                    {
+                        for (int t = 0; t < param.Count; t++)
+                        {
+                            param[t].Value = row[t];
+                        }
+                        cmd.ExecuteNonQuery();
+                    }
+                }
+                #endregion
+
+            }
             #endregion
 
             conn.MakeSureOpen(importAction);
@@ -490,24 +486,22 @@ namespace Vit.Extensions.Db_Extensions
         /// <returns></returns>
         public static int ImportBySql(this SqlConnection conn, DataSet ds)
         {
-            using (var trans = conn.BeginTransaction())
+            using var trans = conn.BeginTransaction();
+            try
             {
-                try
+                int sumCount = 0;
+                foreach (DataTable dt in ds.Tables)
                 {
-                    int sumCount = 0;
-                    foreach (DataTable dt in ds.Tables)
-                    {
-                        conn.ImportBySql(dt, false);
-                        sumCount += dt.Rows.Count;
-                    }
-                    trans.Commit();
-                    return sumCount;
+                    conn.ImportBySql(dt, false);
+                    sumCount += dt.Rows.Count;
                 }
-                catch (Exception)
-                {
-                    trans.Rollback();
-                    throw;
-                }
+                trans.Commit();
+                return sumCount;
+            }
+            catch (Exception)
+            {
+                trans.Rollback();
+                throw;
             }
         }
         #endregion

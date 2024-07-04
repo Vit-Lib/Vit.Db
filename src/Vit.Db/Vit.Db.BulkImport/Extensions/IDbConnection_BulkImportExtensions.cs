@@ -74,35 +74,29 @@ namespace Vit.Extensions.Db_Extensions
         /// <param name="commandTimeout">sets the wait time before terminating the attempt to execute a command and generating an error.</param>
         /// <returns></returns>
         public static int BulkImport(this IDbConnection conn, IDataReader dr, string tableName
-            , int maxRowCount = int.MaxValue, int? batchRowCount = null, Action<int,int> onProcess = null
+            , int maxRowCount = int.MaxValue, int? batchRowCount = null, Action<int, int> onProcess = null
             , bool useTransaction = true, int? commandTimeout = null)
         {
-            switch (conn)
+            return conn switch
             {
-                case Microsoft.Data.SqlClient.SqlConnection msSqlConn:
-                    return msSqlConn.Import(
-                        dr, tableName
-                        , maxRowCount: maxRowCount, batchRowCount: batchRowCount, onProcess: onProcess
-                        , useTransaction: useTransaction, commandTimeout: commandTimeout
-                        );
-
-                case MySqlConnector.MySqlConnection mySqlConn:
-                    return mySqlConn.Import(
-                        dr, tableName
-                        , maxRowCount: maxRowCount, batchRowCount: batchRowCount, onProcess: onProcess
-                        , useTransaction: useTransaction, commandTimeout: commandTimeout
-                        );
-
+                Microsoft.Data.SqlClient.SqlConnection msSqlConn => msSqlConn.Import(
+                                        dr, tableName
+                                        , maxRowCount: maxRowCount, batchRowCount: batchRowCount, onProcess: onProcess
+                                        , useTransaction: useTransaction, commandTimeout: commandTimeout
+                                        ),
+                MySqlConnector.MySqlConnection mySqlConn => mySqlConn.Import(
+                                        dr, tableName
+                                        , maxRowCount: maxRowCount, batchRowCount: batchRowCount, onProcess: onProcess
+                                        , useTransaction: useTransaction, commandTimeout: commandTimeout
+                                        ),
                 //case System.Data.SQLite.SQLiteConnection sqliteConn:
-                case Microsoft.Data.Sqlite.SqliteConnection sqliteConn:
-                    return sqliteConn.Import(
-                        dr, tableName
-                        , maxRowCount: maxRowCount, batchRowCount: batchRowCount, onProcess: onProcess
-                        , useTransaction: useTransaction, commandTimeout: commandTimeout
-                        );                
-            }
-
-            throw new NotImplementedException($"NotImplementedException from IDbConnection.{nameof(BulkImport)} in {nameof(IDbConnection_BulkImportExtensions)}.cs");
+                Microsoft.Data.Sqlite.SqliteConnection sqliteConn => sqliteConn.Import(
+                                        dr, tableName
+                                        , maxRowCount: maxRowCount, batchRowCount: batchRowCount, onProcess: onProcess
+                                        , useTransaction: useTransaction, commandTimeout: commandTimeout
+                                        ),
+                _ => throw new NotImplementedException($"NotImplementedException from IDbConnection.{nameof(BulkImport)} in {nameof(IDbConnection_BulkImportExtensions)}.cs"),
+            };
         }
         #endregion
 

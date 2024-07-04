@@ -3,7 +3,7 @@ using System.Collections.Generic;
 using System.Data;
 using System.Runtime.CompilerServices;
 
-using Vit.Extensions.Json_Extensions;
+using Vit.Extensions.Serialize_Extensions;
 
 namespace Vit.Extensions.Db_Extensions
 {
@@ -22,15 +22,13 @@ namespace Vit.Extensions.Db_Extensions
         [MethodImpl(MethodImplOptions.AggressiveInlining)]
         public static List<Type> QueryScalar<Type>(this IDbConnection conn, string sql, IDictionary<string, object> param = null, int? commandTimeout = null)
         {
-            using (var dr = conn.ExecuteReader(sql, param: param, commandTimeout: commandTimeout)) 
+            using var dr = conn.ExecuteReader(sql, param: param, commandTimeout: commandTimeout);
+            List<Type> result = new List<Type>();
+            while (dr.Read())
             {
-                List<Type> result = new List<Type>();
-                while (dr.Read())
-                {
-                    result.Add((Type)dr[0]);
-                }
-                return result;
-            } 
+                result.Add((Type)dr[0]);
+            }
+            return result;
         }
         #endregion
 
@@ -64,14 +62,12 @@ namespace Vit.Extensions.Db_Extensions
         /// <param name="commandTimeout">The time in seconds to wait for the command to execute. The default is 30 seconds.</param>
         /// <returns></returns>
         [MethodImpl(MethodImplOptions.AggressiveInlining)]
-        public static IEnumerable<Type> Query<Type>(this IDbConnection conn, string sql, Func<IDataReader, Type> getRow, IDictionary<string, object> param = null,  int? commandTimeout = null)
+        public static IEnumerable<Type> Query<Type>(this IDbConnection conn, string sql, Func<IDataReader, Type> getRow, IDictionary<string, object> param = null, int? commandTimeout = null)
         {
-            using (var dr = conn.ExecuteReader(sql, param: param, commandTimeout: commandTimeout))
+            using var dr = conn.ExecuteReader(sql, param: param, commandTimeout: commandTimeout);
+            while (dr.Read())
             {
-                while (dr.Read())
-                {
-                    yield return getRow(dr);
-                }
+                yield return getRow(dr);
             }
         }
         #endregion

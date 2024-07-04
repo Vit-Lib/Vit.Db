@@ -1,6 +1,7 @@
 ﻿using System;
 using System.Collections.Generic;
 using System.Data;
+
 using Vit.Db.Util.Data;
 using Vit.Extensions.Db_Extensions;
 
@@ -27,11 +28,9 @@ namespace Vit.Db.BulkImport
         {
             ConnectionString += "AllowLoadLocalInfile=true;";
 
-            using (var conn = ConnectionFactory.MySql_GetConnection(ConnectionString))
-            {
-                return conn.ImportCsv(csvPath, tableName, columnNames, NumberOfLinesToSkip
-                    , useTransaction: useTransaction, commandTimeout: commandTimeout);
-            }
+            using var conn = ConnectionFactory.MySql_GetConnection(ConnectionString);
+            return conn.ImportCsv(csvPath, tableName, columnNames, NumberOfLinesToSkip
+                , useTransaction: useTransaction, commandTimeout: commandTimeout);
         }
         #endregion
 
@@ -57,13 +56,11 @@ namespace Vit.Db.BulkImport
         {
             ConnectionString += "AllowLoadLocalInfile=true;";
 
-            using (var conn = ConnectionFactory.MySql_GetConnection(ConnectionString))
-            {
-                return conn.Import(
-                    dt, tempFilePath: tempFilePath
-                    , maxRowCount: maxRowCount, batchRowCount: batchRowCount, onProcess: onProcess
-                    , useTransaction: useTransaction, commandTimeout: commandTimeout);
-            }
+            using var conn = ConnectionFactory.MySql_GetConnection(ConnectionString);
+            return conn.Import(
+                dt, tempFilePath: tempFilePath
+                , maxRowCount: maxRowCount, batchRowCount: batchRowCount, onProcess: onProcess
+                , useTransaction: useTransaction, commandTimeout: commandTimeout);
         }
 
 
@@ -92,13 +89,11 @@ namespace Vit.Db.BulkImport
         {
             ConnectionString += "AllowLoadLocalInfile=true;";
 
-            using (var conn = ConnectionFactory.MySql_GetConnection(ConnectionString))
-            {
-                return conn.Import(
-                    dr, tableName, tempFilePath: tempFilePath,
-                    maxRowCount: maxRowCount, batchRowCount: batchRowCount, onProcess: onProcess,
-                    useTransaction: useTransaction, commandTimeout: commandTimeout);
-            }
+            using var conn = ConnectionFactory.MySql_GetConnection(ConnectionString);
+            return conn.Import(
+                dr, tableName, tempFilePath: tempFilePath,
+                maxRowCount: maxRowCount, batchRowCount: batchRowCount, onProcess: onProcess,
+                useTransaction: useTransaction, commandTimeout: commandTimeout);
         }
 
         #endregion

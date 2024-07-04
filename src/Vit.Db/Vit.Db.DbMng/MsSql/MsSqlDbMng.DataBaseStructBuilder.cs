@@ -1,9 +1,9 @@
-﻿ 
+﻿
 
 namespace Vit.Db.DbMng.MsSql
 {
- 
-    public partial class MsSqlDbMng 
+
+    public partial class MsSqlDbMng
     {
 
         public static string DataBaseStructBuilder = @"

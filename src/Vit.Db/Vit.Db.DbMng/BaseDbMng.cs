@@ -1,11 +1,11 @@
-﻿using SharpCompress.Archives;
-using SharpCompress.Common;
-using SharpCompress.Writers;
-
-using System;
+﻿using System;
 using System.Data;
 using System.IO;
 using System.Text.RegularExpressions;
+
+using SharpCompress.Archives;
+using SharpCompress.Common;
+using SharpCompress.Writers;
 
 using Vit.Core.Module.Log;
 using Vit.Db.DbMng.SqlerFile;
@@ -13,7 +13,7 @@ using Vit.Db.Util.Data;
 using Vit.Db.Util.Sqlite;
 using Vit.Extensions;
 using Vit.Extensions.Db_Extensions;
-using Vit.Extensions.Object_Serialize_Extensions;
+using Vit.Extensions.Serialize_Extensions;
 
 namespace Vit.Db.DbMng
 {
@@ -23,9 +23,9 @@ namespace Vit.Db.DbMng
 
         protected DbConnection connSource;
 
-        public BaseDbMng(DbConnection connSource) 
+        public BaseDbMng(DbConnection connSource)
         {
-            this.connSource = connSource; 
+            this.connSource = connSource;
         }
 
         public static int commandTimeout = 0;
@@ -37,13 +37,13 @@ namespace Vit.Db.DbMng
         /// <returns></returns>
         public abstract EDataBaseState GetDataBaseState();
 
-        public abstract string GetDataBaseVersion(); 
+        public abstract string GetDataBaseVersion();
 
         /// <summary>
         /// 创建数据库
         /// </summary>
         public abstract void CreateDataBase();
- 
+
 
         /// <summary>
         /// 删除数据库
@@ -72,7 +72,7 @@ namespace Vit.Db.DbMng
 
         protected abstract string Quote(string name);
 
-        protected virtual void Log(string msg) 
+        protected virtual void Log(string msg)
         {
             Logger.Info(msg);
         }
@@ -86,7 +86,7 @@ namespace Vit.Db.DbMng
         /// <param name="tableName"></param>
         /// <param name="tableRowCount"></param>
         /// <returns></returns>
-        protected virtual int BulkImport(IDataReader dr, string tableName,int tableRowCount) 
+        protected virtual int BulkImport(IDataReader dr, string tableName, int tableRowCount)
         {
             int index = 0;
             return connSource.BulkImport(dr, tableName
@@ -94,7 +94,7 @@ namespace Vit.Db.DbMng
                 {
                     index++;
                     var process = (((float)sum) / tableRowCount * 100).ToString("f2");
-                    Log($"           {index}.[{process}%] {sum }/{tableRowCount}");
+                    Log($"           {index}.[{process}%] {sum}/{tableRowCount}");
                 }
                 , useTransaction: true, commandTimeout: commandTimeout);
         }
@@ -109,9 +109,9 @@ namespace Vit.Db.DbMng
         /// <param name="filePath">备份的文件路径。demo:@"F:\\website\appdata\dbname_2020-02-02_121212.bak"</param>
         /// <param name="useMemoryCache">是否使用内存进行全量缓存，默认:true。缓存到内存可以加快备份速度。在数据源特别庞大时请禁用此功能。</param>
         /// <returns>备份的文件路径</returns>
-        public virtual string BackupSqler(string filePath,bool useMemoryCache = true)
+        public virtual string BackupSqler(string filePath, bool useMemoryCache = true)
         {
-            var tempPath = filePath + "_Temp"; 
+            var tempPath = filePath + "_Temp";
 
             try
             {
@@ -146,7 +146,7 @@ namespace Vit.Db.DbMng
                 Log("");
                 Log(" --(x.2)创建建库语句文件（CreateDataBase.sql）");
                 var sqlText = BuildCreateDataBaseSql();
-                var sqlPath = Path.Combine(tempPath, "CreateDataBase.sql");          
+                var sqlPath = Path.Combine(tempPath, "CreateDataBase.sql");
                 File.WriteAllText(sqlPath, sqlText, System.Text.Encoding.UTF8);
 
                 Log("     成功");
@@ -186,29 +186,27 @@ namespace Vit.Db.DbMng
                         Log($" ----[{tbIndex}/{sumTableCount}]backup table " + tableName);
                         Log($"         rowCount: " + tableRowCount);
 
-                        int rowCount =0;
+                        int rowCount = 0;
 
                         bool ignoreTable = false;
-           
+
 
                         //若表数据条数为0则跳过
                         ignoreTable = 0 == tableRowCount;
 
                         if (!ignoreTable)
                         {
-                            using (IDataReader dr = connSource.ExecuteReader("select * from " + Quote(tableName), commandTimeout: commandTimeout))
-                            {
-                                connTemp.Sqlite_CreateTable(dr, tableName);
-                                int index = 0;
-                                rowCount = connTemp.Import(dr, tableName
-                                    , onProcess: (cur,sum) =>
-                                    {
-                                        index++;
-                                        var process = (((float)sum) / tableRowCount * 100).ToString("f2");
-                                        Log($"           {index}.[{process}%] {sum }/{tableRowCount}");
-                                    }
-                                    , useTransaction: true, commandTimeout: commandTimeout);
-                            }
+                            using IDataReader dr = connSource.ExecuteReader("select * from " + Quote(tableName), commandTimeout: commandTimeout);
+                            connTemp.Sqlite_CreateTable(dr, tableName);
+                            int index = 0;
+                            rowCount = connTemp.Import(dr, tableName
+                                , onProcess: (cur, sum) =>
+                                {
+                                    index++;
+                                    var process = (((float)sum) / tableRowCount * 100).ToString("f2");
+                                    Log($"           {index}.[{process}%] {sum}/{tableRowCount}");
+                                }
+                                , useTransaction: true, commandTimeout: commandTimeout);
                         }
                         sumRowCount += rowCount;
                         Log($"      table backuped. cur: " + rowCount + "  sum: " + sumRowCount);
@@ -225,7 +223,7 @@ namespace Vit.Db.DbMng
 
                 #endregion
 
-          
+
 
                 #region (x.4)压缩备份文件
                 Log("");
@@ -255,10 +253,10 @@ namespace Vit.Db.DbMng
                 Log($"     总共耗时:{span.Hours}小时{span.Minutes}分{span.Seconds}秒{span.Milliseconds}毫秒");
                 lastTime = DateTime.Now;
                 #endregion
-                
+
 
                 Log("");
-                Log("   backup success, table count: "+ sumTableCount + ",  row count: " + sumRowCount);
+                Log("   backup success, table count: " + sumTableCount + ",  row count: " + sumRowCount);
                 span = (DateTime.Now - startTime);
                 Log($"   总共耗时:{span.Hours}小时{span.Minutes}分{span.Seconds}秒{span.Milliseconds}毫秒");
                 Log("");
@@ -289,7 +287,7 @@ namespace Vit.Db.DbMng
         #region RestoreSqler
 
         protected virtual Regex RestoreSqler_SqlSplit => null;
-        
+
 
         /// <summary>
         /// 远程还原数据库   
@@ -375,7 +373,7 @@ namespace Vit.Db.DbMng
                 Log("");
                 Log(" --(x.5)执行命令");
                 int t = 0;
-                foreach (var cmd in backuper.backupInfo.cmd) 
+                foreach (var cmd in backuper.backupInfo.cmd)
                 {
                     t++;
 
@@ -384,7 +382,7 @@ namespace Vit.Db.DbMng
                     Log("    " + cmd.Serialize());
                     backuper.ExecCmd(cmd, commandTimeout);
 
-              
+
                     span = (DateTime.Now - lastTime);
                     Log($"     当前耗时:{span.Hours}小时{span.Minutes}分{span.Seconds}秒{span.Milliseconds}毫秒");
                     span = (DateTime.Now - startTime);
@@ -392,9 +390,9 @@ namespace Vit.Db.DbMng
                     lastTime = DateTime.Now;
                 }
                 #endregion
-            
 
-                Log(""); 
+
+                Log("");
                 Log("   restore success, table count: " + backuper.importedTableCount + ",row count: " + backuper.importedRowCount);
                 span = (DateTime.Now - startTime);
                 Log($"   总共耗时:{span.Hours}小时{span.Minutes}分{span.Seconds}秒{span.Milliseconds}毫秒");

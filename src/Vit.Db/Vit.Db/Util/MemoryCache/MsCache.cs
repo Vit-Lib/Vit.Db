@@ -3,9 +3,9 @@ using Microsoft.Extensions.Options;
 
 namespace Vit.Db.Util.MemoryCache
 {
-    public class MsCache: Microsoft.Extensions.Caching.Memory.MemoryCache
+    public class MsCache : Microsoft.Extensions.Caching.Memory.MemoryCache
     {
-        public MsCache():this(new MemoryCacheOptions())
+        public MsCache() : this(new MemoryCacheOptions())
         {
         }
 

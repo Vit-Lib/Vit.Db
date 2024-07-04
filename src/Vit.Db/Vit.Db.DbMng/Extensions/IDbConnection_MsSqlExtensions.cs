@@ -1,13 +1,16 @@
-﻿using System.Data;
-using System;
-using Microsoft.Data.SqlClient;
-using Vit.Core.Module.Log;
-using SqlConnection = Microsoft.Data.SqlClient.SqlConnection;
-using System.IO;
+﻿using System;
 using System.Collections.Generic;
+using System.Data;
+using System.IO;
+
+using Microsoft.Data.SqlClient;
+
+using Vit.Core.Module.Log;
 using Vit.Core.Util.MethodExt;
-using Vit.Extensions.Json_Extensions;
- 
+using Vit.Extensions.Serialize_Extensions;
+
+using SqlConnection = Microsoft.Data.SqlClient.SqlConnection;
+
 
 namespace Vit.Extensions.Db_Extensions
 {
@@ -75,27 +78,23 @@ if Exists(select top 1 * from sysObjects where Id=OBJECT_ID(N'sqler_temp_filebuf
 
                          cmd.CommandTimeout = commandTimeout ?? 0;
 
-                         using (var dr = cmd.ExecuteReader(CommandBehavior.SequentialAccess))
+                         using var dr = cmd.ExecuteReader(CommandBehavior.SequentialAccess);
+                         if (dr.Read())
                          {
-                             if (dr.Read())
+                             Directory.CreateDirectory(Path.GetDirectoryName(localFilePath));
+
+                             using var output = new FileStream(localFilePath, FileMode.Create);
+                             int bufferSize = 100 * 1024;
+                             byte[] buff = new byte[bufferSize];
+
+                             while (true)
                              {
-                                 Directory.CreateDirectory(Path.GetDirectoryName(localFilePath));
+                                 int buffCount = (int)dr.GetBytes(0, readedCount, buff, 0, bufferSize);
 
-                                 using (var output = new FileStream(localFilePath, FileMode.Create))
-                                 {
-                                     int bufferSize = 100 * 1024;
-                                     byte[] buff = new byte[bufferSize];
+                                 output.Write(buff, 0, buffCount);
+                                 readedCount += buffCount;
 
-                                     while (true)
-                                     {
-                                         int buffCount = (int)dr.GetBytes(0, readedCount, buff, 0, bufferSize);
-
-                                         output.Write(buff, 0, buffCount);
-                                         readedCount += buffCount;
-
-                                         if (buffCount < bufferSize) break;
-                                     }
-                                 }
+                                 if (buffCount < bufferSize) break;
                              }
                          }
                      }
@@ -172,7 +171,7 @@ if Exists(select top 1 * from sysObjects where Id=OBJECT_ID(N'sqler_temp_filebuf
 if Exists(select top 1 * from sysObjects where Id=OBJECT_ID(N'sqler_temp_filebuffer') and xtype='U')
 	drop table sqler_temp_filebuffer;
 select @fileContent as fileContent into sqler_temp_filebuffer;
-", new  Dictionary<string,object>{ ["fileContent"] =fileContent }, commandTimeout: commandTimeout);
+", new Dictionary<string, object> { ["fileContent"] = fileContent }, commandTimeout: commandTimeout);
 
 
                     //(x.3)从临时表读取二进制内容到目标文件
@@ -260,7 +259,7 @@ create table sqler_temp_filebuffer (fileContent varbinary(MAX) null);
                         if (readLen == 0) break;
                         if (readLen < sliceByte)
                         {
-                            fileContent = fileContent.AsSpan().Slice(0, readLen).ToArray();
+                            fileContent = fileContent.AsSpan()[..readLen].ToArray();
                         }
 
                         //(x.x.1)把二进制数据写入到临时表
@@ -385,7 +384,7 @@ if Exists(select top 1 * from sysObjects where Id=OBJECT_ID(N'sqler_temp_filebuf
             #region (x.1)method Body
             Action methodBody = () =>
             {
-                Func<string, DataTable> runCmd = (cmd) => conn.ExecuteDataTable("exec master..xp_cmdshell @cmd ", new Dictionary<string, object> { ["cmd"] = cmd });
+                DataTable runCmd(string cmd) => conn.ExecuteDataTable("exec master..xp_cmdshell @cmd ", new Dictionary<string, object> { ["cmd"] = cmd });
                 handleToRun(runCmd);
             };
             #endregion

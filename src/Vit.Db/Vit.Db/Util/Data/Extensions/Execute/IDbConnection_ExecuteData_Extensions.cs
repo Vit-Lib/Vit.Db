@@ -1,7 +1,7 @@
 ﻿using System.Collections.Generic;
 using System.Data;
 using System.Runtime.CompilerServices;
- 
+
 
 namespace Vit.Extensions.Db_Extensions
 {
@@ -22,11 +22,8 @@ namespace Vit.Extensions.Db_Extensions
         [MethodImpl(MethodImplOptions.AggressiveInlining)]
         public static DataSet ExecuteDataSet(this IDbConnection conn, string sql, IDictionary<string, object> param = null, int? commandTimeout = null)
         {
-            using (var reader = conn.ExecuteReader(sql, param, commandTimeout: commandTimeout))
-            {
-                return reader.ReadDataSet();
-            }
-
+            using var reader = conn.ExecuteReader(sql, param, commandTimeout: commandTimeout);
+            return reader.ReadDataSet();
         }
         #endregion
 
@@ -43,10 +40,8 @@ namespace Vit.Extensions.Db_Extensions
         [MethodImpl(MethodImplOptions.AggressiveInlining)]
         public static DataTable ExecuteDataTable(this IDbConnection conn, string sql, IDictionary<string, object> param = null, int? commandTimeout = null)
         {
-            using (var reader = conn.ExecuteReader(sql, param, commandTimeout: commandTimeout))
-            {
-                return reader.ReadDataTable();
-            }
+            using var reader = conn.ExecuteReader(sql, param, commandTimeout: commandTimeout);
+            return reader.ReadDataTable();
         }
         #endregion
 

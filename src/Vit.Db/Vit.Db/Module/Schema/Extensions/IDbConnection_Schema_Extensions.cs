@@ -20,15 +20,13 @@ namespace Vit.Extensions.Db_Extensions
         /// <returns></returns>
         public static List<string> GetAllTableName(this IDbConnection conn)
         {
-            switch (conn.GetDbType())
+            return conn.GetDbType() switch
             {
-                case EDbType.SqlServer: return conn.MsSql_GetAllTableName();
-                case EDbType.MySql: return conn.MySql_GetAllTableName();
-                case EDbType.Sqlite: return conn.Sqlite_GetAllTableName();
-            }
-
-            throw new NotImplementedException($"NotImplementedException from IDbConnection.{nameof(GetAllTableName)} in {nameof(IDbConnection_Schema_Extensions)}.cs");
-
+                EDbType.SqlServer => conn.MsSql_GetAllTableName(),
+                EDbType.MySql => conn.MySql_GetAllTableName(),
+                EDbType.Sqlite => conn.Sqlite_GetAllTableName(),
+                _ => throw new NotImplementedException($"NotImplementedException from IDbConnection.{nameof(GetAllTableName)} in {nameof(IDbConnection_Schema_Extensions)}.cs"),
+            };
         }
         #endregion
 
@@ -62,15 +60,13 @@ namespace Vit.Extensions.Db_Extensions
         /// <returns></returns>
         public static List<TableSchema> GetSchema(this IDbConnection conn, IEnumerable<string> tableNames = null)
         {
-            switch (conn.GetDbType())
+            return conn.GetDbType() switch
             {
-                case EDbType.SqlServer: return conn.MsSql_GetSchema();
-                case EDbType.MySql: return conn.MySql_GetSchema();
-                case EDbType.Sqlite: return conn.Sqlite_GetSchema();
-            }
-
-            throw new NotImplementedException($"NotImplementedException from IDbConnection.{nameof(GetSchema)} in {nameof(IDbConnection_Schema_Extensions)}.cs");
-
+                EDbType.SqlServer => conn.MsSql_GetSchema(tableNames),
+                EDbType.MySql => conn.MySql_GetSchema(tableNames),
+                EDbType.Sqlite => conn.Sqlite_GetSchema(tableNames),
+                _ => throw new NotImplementedException($"NotImplementedException from IDbConnection.{nameof(GetSchema)} in {nameof(IDbConnection_Schema_Extensions)}.cs"),
+            };
         }
         #endregion
 

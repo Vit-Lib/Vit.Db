@@ -40,7 +40,7 @@ namespace Vit.Db.DbMng
 
         #region 成员变量
 
-        string oriConnectionString;
+        readonly string oriConnectionString;
 
         /// <summary>
         /// 数据库名称
