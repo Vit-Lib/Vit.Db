@@ -42,7 +42,7 @@ namespace Vit.Extensions.Db_Extensions
             var sql = string.Format(@"
 SELECT
 tb.name AS table_name
-,s.name AS table_schema
+,s.name AS schema_name
 ,col.name AS column_name
 -- ''as column_type
 ,colProp.value AS column_comment
@@ -70,7 +70,7 @@ WHERE tb.name IN ('{0}') "
                     curTableSchema = new TableSchema
                     {
                         table_name = col.table_name,
-                        table_schema = col.table_schema,
+                        schema_name = col.schema_name,
                         columns = new List<ColumnSchema>()
                     };
                     tableMap.Add(curTableSchema.table_name, curTableSchema);
@@ -86,7 +86,7 @@ WHERE tb.name IN ('{0}') "
             foreach (var tableSchema in tableSchemas)
             {
                 var tableName = conn.Quote(tableSchema.table_name);
-                if (!string.IsNullOrEmpty(tableSchema.table_schema)) tableName = conn.Quote(tableSchema.table_schema) + "." + tableName;
+                if (!string.IsNullOrEmpty(tableSchema.schema_name)) tableName = conn.Quote(tableSchema.schema_name) + "." + tableName;
                 var dt = conn.ExecuteDataTable("select * from " + tableName + " where 1=2");
                 foreach (DataColumn column in dt.Columns)
                 {
