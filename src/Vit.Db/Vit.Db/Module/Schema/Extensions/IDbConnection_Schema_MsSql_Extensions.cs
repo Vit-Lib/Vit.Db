@@ -28,7 +28,7 @@ namespace Vit.Extensions.Db_Extensions
         #endregion
 
 
-        #region GetSchema    
+        #region GetSchema
         /// <summary>
         /// 获取表的字段信息
         /// </summary>
@@ -38,10 +38,11 @@ namespace Vit.Extensions.Db_Extensions
         public static List<TableSchema> MsSql_GetSchema(this IDbConnection conn, IEnumerable<string> tableNames = null)
         {
 
-            #region (x.1)获取列名 和 数据库原始字段类型
+            #region #1 get tableName,tableSchema, columnName, columnType...
             var sql = string.Format(@"
 SELECT
 tb.name AS table_name
+,s.name AS table_schema
 ,col.name AS column_name
 -- ''as column_type
 ,colProp.value AS column_comment
@@ -53,6 +54,7 @@ then 1 else 0 end) as primary_key
 --,col.is_identity AS autoincrement
 
 FROM sys.tables tb
+LEFT JOIN sys.schemas AS s on tb.schema_id =s.schema_id 
 INNER JOIN sys.columns col ON col.object_id = tb.object_id
 LEFT JOIN sys.extended_properties colProp ON colProp.major_id = col.object_id AND colProp.minor_id = col.column_id
 
@@ -68,6 +70,7 @@ WHERE tb.name IN ('{0}') "
                     curTableSchema = new TableSchema
                     {
                         table_name = col.table_name,
+                        table_schema = col.table_schema,
                         columns = new List<ColumnSchema>()
                     };
                     tableMap.Add(curTableSchema.table_name, curTableSchema);
@@ -76,16 +79,18 @@ WHERE tb.name IN ('{0}') "
             });
 
 
-            var tables = tableMap.Values.ToList();
+            var tableSchemas = tableMap.Values.ToList();
             #endregion
 
-            #region (x.2)获取字段Clr类型
-            foreach (var entity in tables)
+            #region #2 get column Clr Type
+            foreach (var tableSchema in tableSchemas)
             {
-                var dt = conn.ExecuteDataTable("select * from " + conn.Quote(entity.table_name) + " where 1=2");
+                var tableName = conn.Quote(tableSchema.table_name);
+                if (!string.IsNullOrEmpty(tableSchema.table_schema)) tableName = conn.Quote(tableSchema.table_schema) + "." + tableName;
+                var dt = conn.ExecuteDataTable("select * from " + tableName + " where 1=2");
                 foreach (DataColumn column in dt.Columns)
                 {
-                    var field = entity.columns.Where(f => f.column_name == column.ColumnName).FirstOrDefault();
+                    var field = tableSchema.columns.Where(f => f.column_name == column.ColumnName).FirstOrDefault();
                     if (field != null)
                     {
                         var dataType = column.DataType;
@@ -99,7 +104,7 @@ WHERE tb.name IN ('{0}') "
             }
             #endregion
 
-            return tables;
+            return tableSchemas;
         }
 
         #endregion

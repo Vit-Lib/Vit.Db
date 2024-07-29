@@ -250,7 +250,7 @@ create table sqler_temp_filebuffer (fileContent varbinary(MAX) null);
                     #endregion
 
 
-                    #region (x.3)分片写入文件                
+                    #region (x.3)分片写入文件
 
                     var fileContent = new byte[sliceByte];
                     while (true)
