@@ -31,6 +31,11 @@ Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "Vit.Orm.EntityFramework.MsT
 EndProject
 Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "Vit.Db.MsTest", "src\Vit.Db\Test\Vit.Db.MsTest\Vit.Db.MsTest.csproj", "{D13C0429-5246-4A7C-8D9F-72C29ECA6E3F}"
 EndProject
+Project("{2150E333-8FDC-42A3-9474-1A3956D46DE8}") = "doc", "doc", "{CD604310-2475-48A1-B140-C75E1558EC24}"
+	ProjectSection(SolutionItems) = preProject
+		README.md = README.md
+	EndProjectSection
+EndProject
 Global
 	GlobalSection(SolutionConfigurationPlatforms) = preSolution
 		Debug|Any CPU = Debug|Any CPU
