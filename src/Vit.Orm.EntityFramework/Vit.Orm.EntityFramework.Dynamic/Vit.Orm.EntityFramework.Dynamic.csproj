@@ -9,7 +9,7 @@
     <PropertyGroup>
         <Authors>Lith</Authors>
         <Description>extensions for dynamic compile of EntityFramework</Description>
-        <PackageProjectUrl>https://github.com/VitLibs/Vit.Db</PackageProjectUrl>
+        <PackageProjectUrl>https://github.com/Vit-Lib/Vit.Db</PackageProjectUrl>
     </PropertyGroup>
 
     <PropertyGroup>
