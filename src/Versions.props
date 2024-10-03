@@ -1,0 +1,14 @@
+<Project>
+    <PropertyGroup>
+        <Version>3.0.2-preview</Version>
+    </PropertyGroup>
+
+    <PropertyGroup>
+        <Authors>Lith</Authors>
+        <PackageProjectUrl>https://github.com/Vit-Lib/Vit.Db</PackageProjectUrl>
+    </PropertyGroup>
+
+    <PropertyGroup>
+        <DocumentationFile>bin\Debug\$(TargetFramework)\$(MSBuildProjectName).xml</DocumentationFile>
+    </PropertyGroup>
+</Project>

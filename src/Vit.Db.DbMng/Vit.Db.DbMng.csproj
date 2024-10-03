@@ -1,4 +1,5 @@
 <Project Sdk="Microsoft.NET.Sdk">
+    <Import Project="..\Versions.props" />
 
     <PropertyGroup>
         <pack>nuget</pack>
@@ -6,23 +7,15 @@
 
     <PropertyGroup>
         <TargetFramework>netstandard2.1</TargetFramework>
-        <Version>3.0.1</Version>
     </PropertyGroup>
 
     <PropertyGroup>
-        <Authors>Lith</Authors>
         <Description>Database management for Mysql and SqlServer, support database backup and restore / data import and export / show database status / drop database / create database ...</Description>
-        <PackageProjectUrl>https://github.com/Vit-Lib/Vit.Db</PackageProjectUrl>
-    </PropertyGroup>
-
-    <PropertyGroup>
-        <DocumentationFile>bin\Debug\netstandard2.1\Vit.Db.DbMng.xml</DocumentationFile>
     </PropertyGroup>
 
     <ItemGroup>
         <PackageReference Include="sharpcompress" Version="0.37.2" />
     </ItemGroup>
-
 
     <ItemGroup>
         <PackageReference Include="Microsoft.SqlServer.Types" Version="160.1000.6" />
