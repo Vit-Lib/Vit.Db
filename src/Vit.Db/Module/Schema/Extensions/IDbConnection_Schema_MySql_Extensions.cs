@@ -36,7 +36,7 @@ namespace Vit.Extensions.Db_Extensions
         /// <returns></returns>
         public static List<TableSchema> MySql_GetSchema(this IDbConnection conn, IEnumerable<string> tableNames = null)
         {
-            #region (x.1)获取列名 和 数据库原始字段类型          
+            #region (x.1)获取列名 和 数据库原始字段类型
             var sql = string.Format(@"
 SELECT 
 	TABLE_NAME as table_name
@@ -46,7 +46,8 @@ SELECT
 	,if(COLUMN_KEY='PRI',1,0) as primary_key
 	,if(EXTRA='auto_increment',1,0) as autoincrement
     FROM information_schema.COLUMNS
-WHERE TABLE_NAME IN ('{0}')  and TABLE_SCHEMA='{1}'"
+WHERE TABLE_NAME IN ('{0}')  and TABLE_SCHEMA='{1}'
+order by ORDINAL_POSITION "
                     , string.Join("','", tableNames ?? conn.MySql_GetAllTableName()), conn.MySql_GetDbName()
                     );
 
