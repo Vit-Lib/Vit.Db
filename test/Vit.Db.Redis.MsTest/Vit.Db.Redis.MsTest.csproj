@@ -24,7 +24,7 @@
 
 
     <ItemGroup>
-        <ProjectReference Include="..\..\Vit.Db\Vit.Db.csproj" />
+        <ProjectReference Include="..\..\src\Vit.Db\Vit.Db.csproj" />
     </ItemGroup>
 
 </Project>

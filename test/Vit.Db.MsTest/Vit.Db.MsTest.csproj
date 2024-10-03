@@ -19,11 +19,10 @@
     </ItemGroup>
 
     <ItemGroup>
-        <ProjectReference Include="..\..\Vit.Db.BulkImport\Vit.Db.BulkImport.csproj" />
-        <ProjectReference Include="..\..\Vit.Db.DbMng\Vit.Db.DbMng.csproj" />
-        <ProjectReference Include="..\..\Vit.Db\Vit.Db.csproj" />
+        <ProjectReference Include="..\..\src\Vit.Db.BulkImport\Vit.Db.BulkImport.csproj" />
+        <ProjectReference Include="..\..\src\Vit.Db.DbMng\Vit.Db.DbMng.csproj" />
+        <ProjectReference Include="..\..\src\Vit.Db\Vit.Db.csproj" />
     </ItemGroup>
-
 
     <ItemGroup>
         <None Update="appsettings.json">

@@ -5,19 +5,19 @@ VisualStudioVersion = 17.0.31606.5
 MinimumVisualStudioVersion = 10.0.40219.1
 Project("{2150E333-8FDC-42A3-9474-1A3956D46DE8}") = "src", "src", "{11D230B6-F4A0-4257-949D-D0C3F8FCCAC3}"
 EndProject
-Project("{2150E333-8FDC-42A3-9474-1A3956D46DE8}") = "Test", "Test", "{F81C1ECE-2BFA-4EF4-B6D6-F60DF2E50D76}"
+Project("{2150E333-8FDC-42A3-9474-1A3956D46DE8}") = "test", "test", "{F81C1ECE-2BFA-4EF4-B6D6-F60DF2E50D76}"
 EndProject
-Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "Vit.Db", "src\Vit.Db\Vit.Db\Vit.Db.csproj", "{745EDF10-4D26-4F6A-8E91-F6F626AC93CC}"
+Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "Vit.Db", "src\Vit.Db\Vit.Db.csproj", "{745EDF10-4D26-4F6A-8E91-F6F626AC93CC}"
 EndProject
-Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "Vit.Db.BulkImport", "src\Vit.Db\Vit.Db.BulkImport\Vit.Db.BulkImport.csproj", "{46C22F9D-3B64-40CE-9C0F-D9DB84A5109E}"
+Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "Vit.Db.BulkImport", "src\Vit.Db.BulkImport\Vit.Db.BulkImport.csproj", "{46C22F9D-3B64-40CE-9C0F-D9DB84A5109E}"
 EndProject
-Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "Vit.Db.Redis.MsTest", "src\Vit.Db\Test\Vit.Db.Redis.MsTest\Vit.Db.Redis.MsTest.csproj", "{3E3F2A8E-38C5-4D5E-B51F-8CB7D3FB8BE1}"
+Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "Vit.Db.Redis.MsTest", "test\Vit.Db.Redis.MsTest\Vit.Db.Redis.MsTest.csproj", "{3E3F2A8E-38C5-4D5E-B51F-8CB7D3FB8BE1}"
 EndProject
-Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "Vit.Db.Redis.QpsTest", "src\Vit.Db\Test\Vit.Db.Redis.QpsTest\Vit.Db.Redis.QpsTest.csproj", "{B0882A25-C9FD-4C91-AD7A-746FC627FB22}"
+Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "Vit.Db.Redis.QpsTest", "test\Vit.Db.Redis.QpsTest\Vit.Db.Redis.QpsTest.csproj", "{B0882A25-C9FD-4C91-AD7A-746FC627FB22}"
 EndProject
-Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "Vit.Db.DbMng", "src\Vit.Db\Vit.Db.DbMng\Vit.Db.DbMng.csproj", "{D89F8B86-4C68-41C9-8353-9C0841A53CC6}"
+Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "Vit.Db.DbMng", "src\Vit.Db.DbMng\Vit.Db.DbMng.csproj", "{D89F8B86-4C68-41C9-8353-9C0841A53CC6}"
 EndProject
-Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "Vit.Db.MsTest", "src\Vit.Db\Test\Vit.Db.MsTest\Vit.Db.MsTest.csproj", "{D13C0429-5246-4A7C-8D9F-72C29ECA6E3F}"
+Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "Vit.Db.MsTest", "test\Vit.Db.MsTest\Vit.Db.MsTest.csproj", "{D13C0429-5246-4A7C-8D9F-72C29ECA6E3F}"
 EndProject
 Project("{2150E333-8FDC-42A3-9474-1A3956D46DE8}") = "doc", "doc", "{CD604310-2475-48A1-B140-C75E1558EC24}"
 	ProjectSection(SolutionItems) = preProject
