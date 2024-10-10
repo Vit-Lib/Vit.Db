@@ -21,11 +21,11 @@
         <!--SqlServer-->
         <PackageReference Include="Microsoft.Data.SqlClient" Version="5.2.2" />
         <!--Sqlite-->
-        <PackageReference Include="Microsoft.Data.Sqlite" Version="8.0.8" />
+        <PackageReference Include="Microsoft.Data.Sqlite" Version="8.0.10" />
 
-        <PackageReference Include="Vit.Core" Version="2.2.0" />
-        <PackageReference Include="Microsoft.Extensions.Caching.Memory" Version="8.0.0" />
-        <PackageReference Include="StackExchange.Redis" Version="2.8.0" />
+        <PackageReference Include="Vit.Core" Version="2.3.0" />
+        <PackageReference Include="Microsoft.Extensions.Caching.Memory" Version="8.0.1" />
+        <PackageReference Include="StackExchange.Redis" Version="2.8.16" />
     </ItemGroup>
 
 </Project>
